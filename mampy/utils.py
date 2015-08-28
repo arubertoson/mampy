@@ -4,20 +4,20 @@
     mampy.utils
     ~~~~~~~~~~~
 
+    various helper functions.
+
 """
 import functools
 import collections
 
 import maya.cmds as cmds
-import maya.api.OpenMaya as api
-
-from .component import Component
-from .nodes import DagNode
 
 
 def history_chunk(func):
     """
-    Wraps function inside a history chunk enabling undo for scripts inside
+    History chunk decorator.
+
+    Wraps function inside a history chunk enabling undo for scriptgs inside
     Maya.
     """
     @functools.wraps
@@ -33,130 +33,6 @@ def history_chunk(func):
             cmds.undoInfo(closeChunk=True)
         return result
     return wrapper
-
-
-class SelectionList(object):
-    """Sequence object that wraps MSelectionList from new maya api.
-
-    Emulates the api MSelectionList while trying to behave like a list
-    object. The main difference is that iter iterates over the string list,
-    to iterate over MObjects use the itercomps/iterdags.
-
-    The sequence always returns either a Component or DagPath, these are
-    custom classes that wraps MObjects and MDagPaths to behave more like
-    python objects.
-    """
-
-    def __init__(self, slist=None, merge=True):
-        if isinstance(slist, api.MSelectionList):
-            self._slist = api.MSelectionList(slist)
-
-        elif type(slist) in [set, list, tuple]:
-            self._slist = api.MSelectionList()
-            for dagstr in slist:
-                tmp = api.MSelectionList(); tmp.add(dagstr)
-                dp, comp = tmp.getComponent(0)
-                if comp.isNull():
-                    self._slist.add(dp, mergeWithExisting=merge)
-                else:
-                    self._slist.add((dp, comp), mergeWithExisting=merge)
-        else:
-            self._slist = api.MSelectionList()
-
-    def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, str(self))
-
-    def __str__(self):
-        return '{}'.format(list(self))
-
-    def __getitem__(self, key):
-        if isinstance(key, slice):
-            raise TypeError('{} does not support slice.'
-                            .format(self.__class__.__name__))
-
-        mdag, mobj = self._slist.getComponent(key)
-        if mobj.isNull():
-            return DagNode(mdag)
-        return Component(mdag, mobj)
-
-    def __len__(self):
-        return self._slist.length()
-
-    def __iter__(self):
-        """
-        Since the only viable way to interate an MSelectionList is by idx
-        and that's pretty well covered with xrange(len(self)) iter is used
-        to create the stringlist, which can easily be passed to cmds commands.
-        """
-        return iter(self._slist.getSelectionStrings())
-
-    def __contains__(self, value):
-        if type(value) == tuple:
-            return self._slist.hasItemPartly(*value)
-        return self._slist.hasItem(value)
-
-    def __eq__(self, other):
-        return list(self) == list(other)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __nonzero__(self):
-        return bool(len(self))
-
-    def __hash__(self):
-        return hash(list(self))
-
-    @classmethod
-    def from_ls(cls, merge=True, **kwargs):
-        return cls(cmds.ls(**kwargs), merge)
-
-    @classmethod
-    def from_selection(cls):
-        return cls(api.MGlobal.getActiveSelectionList())
-
-    @classmethod
-    def from_ordered(cls, start=None, stop=None, step=None, **kwargs):
-        return cls(cmds.ls(os=True)[slice(start, stop, step)], False)
-
-    def append(self, value):
-        if isinstance(value, basestring):
-            self._slist.add(value)
-        elif isinstance(value, (DagNode, Component)):
-            self._slist.add(value.node, mergeWithExisting=False)
-        else:
-            self._slist.add(value, mergeWithExisting=False)
-
-    def extend(self, other, strategy=api.MSelectionList.kMergeNormal):
-        if type(other) == tuple:
-            mdag, mobj = other
-            self._slist.merge(mdag, mobj, strategy)
-        else:
-            self._slist.merge(other._slist, strategy)
-
-    def copy(self):
-        return self.__class__(api.MSelectionList().copy(self._slist))
-
-    def toggle(self, other):
-        self.extend(other, api.MSelectionList.kXORWithList)
-
-    def remove(self, other):
-        self.extend(other, api.MSelectionList.kRemoveFromList)
-
-    def pop(self, index):
-        value = self[index]
-        self._slist.remove(index)
-        return value
-
-    __delitem__ = pop
-
-    def itercomps(self):
-        for idx in xrange(len(self)):
-            yield Component(*self._slist.getComponent(idx))
-
-    def iterdags(self):
-        for idx in xrange(len(self)):
-            yield DagNode(self._slist.getDagPath(idx))
 
 
 class OptionVar(collections.MutableMapping):

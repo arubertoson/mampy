@@ -1,30 +1,33 @@
 """
-    mampy
-    ~~~~~
+    Mampy Maya library
+    ~~~~~~~~~~~~~~~~~~
 
-    mampy is a Maya library, written in python for easier functionality.
+    Mampy is a Maya API wrapper, written in python. Basic usage:
 
-    The maya api in its current state is overly verbose and very cumbersome
-    to work with.
+        >>> import mampy
+        >>> slist = mampy.selected()
+        >>> component = slist.itercomps()
+        ['list of components']
+        >>> cmds.select(list(components), r=True)
 
-    Although pymel does make it easier the overhead is way to much if you
-    want to write anything that is a bit fast. This is not how I want to work,
-    I want it to be easy and fast which made me do mampy.
+    or to work with a Node:
 
-    Mampy aims to be lightweight pymel, it uses a mix between the old and new
-    maya api. Mostly to access the datatypes the new api provides that are
-    much easier to work with in python.
+        >>> name = 'persp'
+        >>> camera = DagNode(name)
+        >>> camera.get_shape()
+        'perspShape'
 
-    Features
 
-        - SelectionList object that behaves like an immutable python
-          list.
-        - Component object for access to common tasks.
-        - Node objects for access too common tasks.
-        - OptionVar dict object, much like pymels optionVar dict.
+    For more examples see documentation at <http://readthedocs.com>.
+
+    :copyright: (c) 2015 Marcus Albertsson.
+    :license: MIT, see LICENSE for more details.
 
 """
 
-from mampy.utils import SelectionList, OptionVar
-from mampy.component import Component
-from mampy.nodes import DagNode
+from . import utils
+from .selectionlist import SelectionList
+from .node import DagNode
+from .component import Component
+from .api import (ls, selected, ordered_selection, get_node, get_component,
+                  optionVar)
