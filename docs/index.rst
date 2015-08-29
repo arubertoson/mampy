@@ -1,3 +1,7 @@
+.. mampy documentation master file, created by
+   sphinx-quickstart on Sat Aug 29 01:12:51 2015.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
 mampy
 =====
@@ -53,10 +57,25 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   api
 
-.. module:: mampy.utils
-.. autofunction:: history_chunk
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+
+Welcome to mampy's documentation!
+=================================
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+.. autofunction:: selected
+
 
 Indices and tables
 ==================

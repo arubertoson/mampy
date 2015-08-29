@@ -3,7 +3,6 @@
 =========
 API Guide
 =========
-
 .. module:: mampy
 
 Detailed documentation for Mampy's Python API.
@@ -24,17 +23,13 @@ Main Interface
 
 
 
-.. _selection_list:
-
 Selection List
 --------------
-
-.. module:: mampy.selectionlist
 
 Selection list object provides a quick way to retrieve objects in current
 Maya scene. Thera are currently three ways of retrieveing objects.
 
-.. autoclass:: SelectionList(slist=MSelectionList)
+.. autoclass:: mampy.selectionlist.SelectionList(slist=MSelectionList)
     :members:
 
 
@@ -42,8 +37,4 @@ Maya scene. Thera are currently three ways of retrieveing objects.
 Component
 ---------
 
-.. module:: mampy
-
-.. automodule:: mampy.component
-    :members:
 
