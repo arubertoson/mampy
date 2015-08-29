@@ -5,10 +5,35 @@ import shlex
 import mock
 
 
-MOCK_MODULES = ['maya', 'maya.cmds', 'maya.OpenMaya', 'maya.api.OpenMaya',
-                'OpenMaya', 'api.OpenMaya']
+#mock_modules_list
+MOCK_MODULES = [
+  'pymel',
+  'pymel.core',
+  'maya',
+  'maya.utils',
+  'maya.cmds',
+  'maya.mel',
+  'maya.api',
+  'maya.OpenMaya',
+  'maya.OpenMayaUI',
+  'maya.api.OpenMaya',
+  'maya.OpenMayaMPx',
+  'nuke',
+  'nukescripts',
+  'PySide',
+  'PyQt4',
+  'QtGui',
+  'QtCore',
+  'uic',
+  'qdarkstyle',
+  'py2exe',
+  'winshell',
+  'mf',
+  'modulefinder',
+  'yaml',
+]
 
-sys.modules.update((mod_name, mock.Mock()) for mod_name in MOCK_MODULES)
+sys.modules.update((mod_name, mock.MagicMock()) for mod_name in MOCK_MODULES)
 sys.path.insert(0, os.path.abspath('..'))
 
 

@@ -57,6 +57,9 @@ Contents:
    :maxdepth: 2
 
 .. autofunction:: selected
+.. autofunction:: ls
+.. autofunction:: ordered_selection
+.. autofunction:: get_component
 
 
 Indices and tables

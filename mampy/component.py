@@ -12,12 +12,8 @@ import itertools
 
 # Maya API import
 import maya.cmds as cmds
-try:
-    import maya.api.OpenMaya as api
-    from maya.api.OpenMaya import MFn
-except ImportError:
-    import maya.OpenMaya as api
-    from maya.OpenMaya import MFn
+import maya.api.OpenMaya as api
+from maya.api.OpenMaya import MFn
 
 
 logger = logging.getLogger(__name__)
