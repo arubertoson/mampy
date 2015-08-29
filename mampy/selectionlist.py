@@ -12,7 +12,7 @@ except ImportError:
     import maya.OpenMaya as api
 
 from .component import Component
-from .node import DagNode
+from .nodes import DagNode
 
 
 class SelectionList(object):

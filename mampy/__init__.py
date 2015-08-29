@@ -27,7 +27,7 @@
 
 from . import utils
 from .selectionlist import SelectionList
-from .node import DagNode
+from .nodes import DagNode
 from .component import Component
 from .api import (ls, selected, ordered_selection, get_node, get_component,
                   optionVar)
