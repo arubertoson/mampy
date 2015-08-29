@@ -6,7 +6,10 @@
 
 """
 import maya.cmds as cmds
-import maya.api.OpenMaya as api
+try:
+    import maya.api.OpenMaya as api
+except ImportError:
+    import maya.OpenMaya as api
 
 from .component import Component
 from .node import DagNode

@@ -9,7 +9,11 @@
 """
 import maya.cmds as cmds
 import maya.OpenMaya as oldapi
-import maya.api.OpenMaya as api
+
+try:
+    import maya.api.OpenMaya as api
+except ImportError:
+    import maya.OpenMaya as api
 
 
 class Plug(api.MPlug):

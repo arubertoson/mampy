@@ -51,24 +51,6 @@ Listing mesh objects in selection:
     ('mampy_1_mesh')
 
 
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-
-Welcome to mampy's documentation!
-=================================
-
 Contents:
 
 .. toctree::
@@ -83,4 +65,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
