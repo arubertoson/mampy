@@ -27,4 +27,5 @@ Features
 Documentation
 =============
 
-For more information visit :link:`docs <>
+For more information visit
+`docs <http://maya-mampy.readthedocs.org/en/latest>`_.
