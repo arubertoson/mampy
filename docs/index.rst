@@ -1,8 +1,3 @@
-.. mampy documentation master file, created by
-   sphinx-quickstart on Sat Aug 29 01:12:51 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 mampy
 =====
 
@@ -12,59 +7,45 @@ mampy
 .. moduleauthor:: Marcus Albertsson <marcus.arubertoson@gmail.com>
 
 
-The maya api in its current state is overly verbose and very cumbersome
-to work with. Although pymel does a great job the overhead is way
-too heavy for iterations. I wanted something faster, so I made mampy.
+The Autodesk Maya API in its current state is overly verbose and very
+cumbersome to work with. Although pymel does a great job the overhead
+is way too heavy for iterations. I wanted something faster, so I made
+mampy.
 
-Mampy aims to be lightweight pymel, it uses a mix between the old and new
-maya api. Mostly to access the datatypes the new api provides which are
-way easier to work with than the old api objects.
+Mampy aims to be lightweight pymel, it uses a mix between the old and
+new Maya APIs. Mostly to access the datatypes the new API provides
+which are easier to work with than the old api objects.
+
 
 .. note::
-    This module is a work in progress. I usually add features as I need them
-    so classes are most likely incomplete. But this goes hand in hand with
-    my lightweight philosophy. No need to bloat it to death!
-
-Download
---------
-
-Main development takes place on github: http://github.com/arubertoson/maya-mampy
+    This module is a work in progress. Features are added when needed
+    so classes are most likely incomplete. But this goes hand in hand
+    with my lightweight philosophy. No need to create functions that
+    "might" be useful one day.
 
 
-Basic use
----------
 
-Importing the module::
+User Guide
+----------
 
-    >>> import mampy
-
-Listing selected objects:
-
-    >>> s = mampy.selected()
-    >>> s
-    ('mampy_1_mesh', 'mampy_curve')
-
-Listing mesh objects in selection:
-
-    >>> s = mampy.ls(sl=True, type='mesh')
-    >>> s
-    ('mampy_1_mesh')
-
-
-Contents:
+This part of the documentation aims to get you started with mampy. It's
+quite gritty and is not written as a step by step guide but tries to
+introduce the basic usage.
 
 .. toctree::
    :maxdepth: 2
 
-.. autofunction:: selected
-.. autofunction:: ls
-.. autofunction:: ordered_selection
-.. autofunction:: get_component
+   component
 
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+API Documentation
+-----------------
+
+If you are looking for information on a specific function, class or
+method.
+
+.. toctree::
+   :maxdepth: 2
+
+   api

@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Working with Components &mdash; mampy 0.0.2 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="mampy 0.0.2 documentation" href="index.html"/>
+        <link rel="next" title="API Documentation" href="api.html"/>
+        <link rel="prev" title="mampy" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> mampy
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Working with Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quick-example">Quick example</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#main-interface">Main Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#classes">Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#selection-list">Selection List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#dagnode">DagNode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#component">Component</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">mampy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Working with Components</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/component.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="module-mampy.comp">
+<span id="working-with-components"></span><h1>Working with Components<a class="headerlink" href="#module-mampy.comp" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This document is a work in progress. It&#8217;s always advisable to look
+through the source, if you still can&#8217;t find your answer the feature
+you are looking for might not be implemented. Send me and email or
+join the development.</p>
+</div>
+<p>A component is a container of a Maya <cite>component set</cite>. Each component is
+a Python class that subclasses <a class="reference internal" href="api.html#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> and currently only
+supports components found on Maya mesh object.</p>
+<div class="section" id="quick-example">
+<h2>Quick example<a class="headerlink" href="#quick-example" title="Permalink to this headline">¶</a></h2>
+<p>This example shows how components are usually fetched within mampy.
+From the API function <code class="xref py py-func docutils literal"><span class="pre">mampy.selected()</span></code> we create a
+<a class="reference internal" href="api.html#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> containing the currently selected objects in</p>
+<blockquote>
+<div><p>Maya. We then fetch the components from that list.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mampy</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">slist</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">selected</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">slist</span><span class="o">.</span><span class="n">itercomps</span><span class="p">())</span>
+<span class="go">[MeshVert([u&#39;pCube1.vtx[0]&#39;, u&#39;pCube1.vtx[2:5]&#39;]),</span>
+<span class="go"> MeshVert([u&#39;pCube2.vtx[0]&#39;, u&#39;pCube2.vtx[2]&#39;])]</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>As you can see a component is not a single index of a vertex, it is a
+set of components belonging to a certain object. This is useful
+knowledge because that means we can create components and add to them.
+To create an empty component we must provide a valid Maya dagpath to
+either subclasses: <a class="reference internal" href="api.html#mampy.comp.MeshVert" title="mampy.comp.MeshVert"><code class="xref py py-class docutils literal"><span class="pre">MeshVert</span></code></a>, <a class="reference internal" href="api.html#mampy.comp.MeshEdge" title="mampy.comp.MeshEdge"><code class="xref py py-class docutils literal"><span class="pre">MeshEdge</span></code></a>,
+<a class="reference internal" href="api.html#mampy.comp.MeshPolygon" title="mampy.comp.MeshPolygon"><code class="xref py py-class docutils literal"><span class="pre">MeshPolygon</span></code></a> or <a class="reference internal" href="api.html#mampy.comp.MeshMap" title="mampy.comp.MeshMap"><code class="xref py py-class docutils literal"><span class="pre">MeshMap</span></code></a> or we can use
+<a class="reference internal" href="api.html#mampy.Component.create" title="mampy.Component.create"><code class="xref py py-func docutils literal"><span class="pre">Component.create()</span></code></a>, but then we must
+provide the Mayas internal <em>int type</em> for the component we want to
+create.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">maya.OpenMaya</span> <span class="kn">import</span> <span class="n">MFn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dagpath</span> <span class="o">=</span> <span class="s">&#39;pCube1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vert</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">Component</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshVertComponent</span><span class="p">)</span>
+<span class="go">MeshVert(&#39;pCube1.vtx[]&#39;)</span>
+</pre></div>
+</div>
+<p>This is not the preferred way of creating components. It&#8217;s much easier
+and clearer to do this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dagpath</span> <span class="o">=</span> <span class="s">&#39;pCube1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vert</span> <span class="o">=</span> <span class="n">MeshVert</span><span class="p">(</span><span class="n">dagpath</span><span class="p">)</span>
+<span class="go">MeshVert(&#39;pCube1.vtx[]&#39;)</span>
+</pre></div>
+</div>
+<p>From an empty component object you can quickly get something useful by
+either adding indices to it or just get the complete component:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">vert</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">MeshVert(&#39;pCube1.vtx[1:3]&#39;)</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vert</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">MeshVert([&#39;pCube1.vtx[1:3]&#39;, &#39;pCube1.vtx[5]&#39;])</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">complete</span> <span class="o">=</span> <span class="n">vert</span><span class="o">.</span><span class="n">get_complete</span><span class="p">()</span>
+<span class="go">MeshVert(&#39;pCube1.vtx[*]&#39;)</span>
+</pre></div>
+</div>
+<p>Then we can easily send the component object to a normal <code class="docutils literal"><span class="pre">maya.cmds</span></code>
+function not how we call <code class="docutils literal"><span class="pre">list()</span></code> on the <a class="reference internal" href="api.html#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> to
+retrieve a Maya <em>string list</em> representing the component set:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cmds</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">vert</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmds</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">sl</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="go">[&#39;pCube1.vtx[1:3]&#39;, &#39;pCube1.vtx[5]&#39;]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmds</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">complete</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmds</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">sl</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="go">[&#39;pCube1.vtx[*]&#39;]</span>
+</pre></div>
+</div>
+<p>Other ways to fetch a <a class="reference internal" href="api.html#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> through the API is the
+<code class="xref py py-func docutils literal"><span class="pre">mampy.get_component()</span></code> function. Now that we know how components
+are constructed we can pass a Maya <em>string list</em> to the function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">slist</span> <span class="o">=</span> <span class="n">cmds</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">sl</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="go">[u&#39;pCube1.vtx[2:4]&#39;, u&#39;pCube1.vtx[7]&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">comp</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">get_component</span><span class="p">(</span><span class="n">slist</span><span class="p">)</span>
+<span class="go">MeshVert([u&#39;pCube1.vtx[2:4]&#39;, u&#39;pCube1.vtx[7]&#39;])</span>
+</pre></div>
+</div>
+<p>Something of note, we can&#8217;t pass more than one component into the
+<code class="xref py py-func docutils literal"><span class="pre">mampy.get_component()</span></code> function, it&#8217;s only meant to create a
+single <a class="reference internal" href="api.html#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">slist</span> <span class="o">=</span> <span class="n">cmds</span><span class="o">.</span><span class="n">sl</span><span class="p">(</span><span class="n">sl</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="go"># From the dagpaths we can see that we are working with two objects.</span>
+<span class="go">[u&#39;pCube1.vtx[2:4]&#39;, u&#39;pCube1.vtx[7]&#39;, u&#39;pCube2.vtx[5]&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">comp</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">get_component</span><span class="p">(</span><span class="n">slist</span><span class="p">)</span>
+<span class="go">TypeError: More than one object in dagpath.</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="api.html"><em>API</em></a> documentation provides additional information
+about the different <a class="reference internal" href="api.html#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> functions and attributes.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api.html" class="btn btn-neutral float-right" title="API Documentation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="mampy" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Marcus Albertsson.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

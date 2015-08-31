@@ -1,31 +1,46 @@
-# -*- coding: utf-8 -*-
-
 """
-    mampy.utils
-    ~~~~~~~~~~~
-
+This module contains the ``SelectionList`` class and functions for
+working with ``SelectionList`` objects
 """
+
+import logging
+
 import maya.cmds as cmds
 from maya.api import OpenMaya as api
 
-from .component import Component
-from .nodes import DagNode
+from mampy.comp import Component
+from mampy.node import DagNode
+
+logger = logging.getLogger(__name__)
+
+
+__all__ = ['SelectionList']
 
 
 class SelectionList(object):
-    """The :class:`SelectionList <SelectionList>` is a sequence object that
-    wraps MSelectionList from new maya api.
+    """
+    A sequence like object wrapping the ``api.OpenMaya.MSelectionList``
+    object.
 
-    Emulates the api MSelectionList while trying to behave like a list
-    object. The objects in the list can be fetched by index making the
-    __iter__ a bit useless. I've taken advantage of this and made the __iter__
-    refer to MSelectionList.getSelectionStrings() to fetch the readable
-    string list that maya usually provices through cmds.ls making the
-    :class:`SelectionList` easy to pass around.
+    Emulates the ``api.OpenMaya.MSelectionList`` while trying to behave
+    like a list object. The objects in the list can be fetched by index
+    making the __iter__ a bit useless. I've taken advantage of this and
+    made the __iter__ refer to ``MSelectionList.getSelectionStrings()``
+    to fetch the readable string list that maya usually provides
+    through ``cmds.ls`` function. This makes :class:`SelectionList`
+    easier to pass around.
 
-    The sequence always returns either a Component or DagPath, these are
-    custom classes that wraps MObjects and MDagPaths to behave more like
-    python objects.
+    Usage::
+
+        >>> import mampy
+        >>> slist = mampy.SelectionList()
+        SelectionList([])
+        ...
+        >>> cmds.ls(sl=True)
+        ['pCube1', 'pCube2']
+        ...
+        >>> slist.extend(cmds.ls(sl=True))
+        SelectionList([u'pCube1', u'pCube2'])
     """
 
     def __init__(self, slist=None, merge=True):
@@ -67,6 +82,8 @@ class SelectionList(object):
         return iter(self._slist.getSelectionStrings())
 
     def __contains__(self, value):
+        if isinstance(value, basestring):
+            return value in self._slist.getSelectionStrings()
         if type(value) == tuple:
             return self._slist.hasItemPartly(*value)
         return self._slist.hasItem(value)
@@ -86,23 +103,26 @@ class SelectionList(object):
     @classmethod
     def from_ls(cls, merge=True, **kwargs):
         """
-        Constructs a :class:`SelectionList` from ls.
+        Constructs a :class:`SelectionList` from ``cmds.ls``.
 
-        :param merge: If found components should be merged to one MObject.
+        :param merge: If found components should be merged to one
+            MObject.
         """
         return cls(cmds.ls(**kwargs), merge)
 
     @classmethod
     def from_selection(cls):
         """
-        Constructs a :class:`SelectionList` from selection.
+        Constructs a :class:`SelectionList` from
+        ``api.OpenMaya.MGlobal.getActiveSelectionList()``.
         """
         return cls(api.MGlobal.getActiveSelectionList())
 
     @classmethod
     def from_ordered(cls, start=None, stop=None, step=None, **kwargs):
         """
-        Constructs and returns an ordered :class:`SelectionList`.
+        Construct a :class:`SelectionList` from ``cmds.ls(os=True)`` and
+        return it.
 
         :param start: start of slice.
         :param stop: end of slice.
@@ -114,7 +134,8 @@ class SelectionList(object):
         """
         Appends a given dagpath to the end of the list.
 
-        :param value: dagpath string, MObject, (MDatPath, MObject) tuple
+        :param value: dagpath string, ``MObject``,
+            ``(api.OpenMaya.MDatPath, api.OpenMaya.MObject)``
         """
         if isinstance(value, basestring):
             self._slist.add(value)
@@ -125,16 +146,19 @@ class SelectionList(object):
 
     def extend(self, other, strategy=api.MSelectionList.kMergeNormal):
         """
-        Extends list with given :class:`SelectionList` object or
-        :class:`Component`.
+        Extend list with other. s list with given
 
-        :param strategy: Merge stratgety
+        :param other: :class:`SelectionList`, :class:`Component` or
+            ``list, tuple, set`` of dagpath strings.
+        :param strategy: ``api.OpenMaya.MSelectionList`` Merge strategy
         """
-        if type(other) == tuple:
+        if (isinstance(other, (list, tuple, set)) and not
+                isinstance(iter(other).next(), api.MDagPath)):
+            other = self.__class__(other)
+        elif type(other) == tuple:
             mdag, mobj = other
             self._slist.merge(mdag, mobj, strategy)
-        else:
-            self._slist.merge(other._slist, strategy)
+        self._slist.merge(other._slist, strategy)
 
     def copy(self):
         """
@@ -150,7 +174,7 @@ class SelectionList(object):
 
     def remove(self, other):
         """
-        Removes other :class:`SelectionList` object from self.
+        Removes other :class:`SelectionList` objects from self.
         """
         self.extend(other, api.MSelectionList.kRemoveFromList)
 
@@ -166,18 +190,20 @@ class SelectionList(object):
 
     def itercomps(self):
         """
-        Iterates over the :class:`SelectionList` :class:`Component` objects.
-
-        .. note:: Not treadsafe.
+        Iterates over the :class:`SelectionList` :class:`Component`
+        objects.
         """
         for idx in xrange(len(self)):
             yield Component(*self._slist.getComponent(idx))
 
     def iterdags(self):
         """
-        Iterates over the :class:`SelectionList` :class:`DagNode` objects.
-
-        .. note:: Not treadsafe.
+        Iterates over the :class:`SelectionList` :class:`DagNode`
+        objects.
         """
         for idx in xrange(len(self)):
             yield DagNode(self._slist.getDagPath(idx))
+
+
+if __name__ == '__init__':
+    pass

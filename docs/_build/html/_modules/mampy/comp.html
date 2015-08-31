@@ -1,0 +1,622 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mampy.comp &mdash; mampy 0.0.2 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="mampy 0.0.2 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../../index.html" class="icon icon-home"> mampy
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../component.html">Working with Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../component.html#quick-example">Quick example</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api.html#main-interface">Main Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#classes">Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api.html#selection-list">Selection List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api.html#dagnode">DagNode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api.html#component">Component</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">mampy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>mampy.comp</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for mampy.comp</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains the `Component` class and functions for working with</span>
+<span class="sd">``Component`` objects.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="c"># Maya API import</span>
+<span class="kn">import</span> <span class="nn">maya.cmds</span> <span class="kn">as</span> <span class="nn">cmds</span>
+<span class="kn">import</span> <span class="nn">maya.api.OpenMaya</span> <span class="kn">as</span> <span class="nn">api</span>
+<span class="kn">from</span> <span class="nn">maya.api.OpenMaya</span> <span class="kn">import</span> <span class="n">MFn</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;Component&#39;</span><span class="p">,</span> <span class="s">&#39;MeshVert&#39;</span><span class="p">,</span> <span class="s">&#39;MeshEdge&#39;</span><span class="p">,</span> <span class="s">&#39;MeshPolygon&#39;</span><span class="p">,</span> <span class="s">&#39;MeshMap&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Component"><a class="viewcode-back" href="../../api.html#mampy.Component">[docs]</a><span class="k">class</span> <span class="nc">Component</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A base component class, providing most behavior that other component</span>
+<span class="sd">    classes can inherit and override, as necessary.</span>
+
+<span class="sd">    :param dagpath: dagpath str, list of dagpath str or</span>
+<span class="sd">                    ``api.OpenMaya.MDagPath``</span>
+<span class="sd">    :param compobj: ``api.OpenMaya.MObject``</span>
+
+<span class="sd">    Usage::</span>
+
+<span class="sd">        &gt;&gt;&gt; import mampy</span>
+<span class="sd">        &gt;&gt;&gt; comp = mampy.Component(&#39;pCube1.f[0]&#39;)</span>
+<span class="sd">        MeshPolygon(&#39;pCube1.f[0]&#39;)</span>
+
+<span class="sd">    .. note:: :class:`Component` does not yet support vertex faces.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">TYPESTR</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshVertComponent</span><span class="p">:</span> <span class="s">&#39;vtx&#39;</span><span class="p">,</span>
+        <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshPolygonComponent</span><span class="p">:</span> <span class="s">&#39;f&#39;</span><span class="p">,</span>
+        <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshEdgeComponent</span><span class="p">:</span> <span class="s">&#39;e&#39;</span><span class="p">,</span>
+        <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshVtxFaceComponent</span><span class="p">:</span> <span class="s">&#39;vtxFace&#39;</span><span class="p">,</span>
+        <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshMapComponent</span><span class="p">:</span> <span class="s">&#39;map&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">SET_COMPLETE</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshPolygonComponent</span><span class="p">:</span> <span class="s">&#39;numPolygons&#39;</span><span class="p">,</span>
+        <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshEdgeComponent</span><span class="p">:</span> <span class="s">&#39;numEdges&#39;</span><span class="p">,</span>
+        <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshVertComponent</span><span class="p">:</span> <span class="s">&#39;numVertices&#39;</span><span class="p">,</span>
+        <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshMapComponent</span><span class="p">:</span> <span class="s">&#39;numUVs&#39;</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">dagpath</span><span class="p">,</span> <span class="n">compobj</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c"># If class is not called with MDagPath or MObject creates new MDagPath</span>
+        <span class="c"># and MObject from either string list or a string.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">api</span><span class="o">.</span><span class="n">MDagPath</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">compobj</span><span class="p">,</span> <span class="n">api</span><span class="o">.</span><span class="n">MObject</span><span class="p">)):</span>
+            <span class="n">slist</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MSelectionList</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dagpath</span><span class="p">:</span>
+                    <span class="n">slist</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">slist</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">dagpath</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">slist</span><span class="o">.</span><span class="n">length</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;More than one object in dagpath.&#39;</span><span class="p">)</span>
+            <span class="n">dagpath</span><span class="p">,</span> <span class="n">compobj</span> <span class="o">=</span> <span class="n">slist</span><span class="o">.</span><span class="n">getComponent</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c"># Fetch right type class</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__subclasses__</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">compobj</span><span class="o">.</span><span class="n">apiType</span><span class="p">()</span> <span class="o">==</span> <span class="n">c</span><span class="o">.</span><span class="n">__mtype__</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">cls</span> <span class="o">=</span> <span class="n">c</span>
+
+        <span class="bp">self</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__init</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">compobj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dagpath</span><span class="p">,</span> <span class="n">compobj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span> <span class="o">=</span> <span class="n">dagpath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object</span> <span class="o">=</span> <span class="n">compobj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">space</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MSpace</span><span class="o">.</span><span class="n">kWorld</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_slist</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MSelectionList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_slist</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MFnSingleIndexedComponent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bbox</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;{}({})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">isNull</span><span class="p">():</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span><span class="o">.</span><span class="n">isEmpty</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="s">&#39;{}.{}[]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TYPESTR</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slist</span><span class="o">.</span><span class="n">getSelectionStrings</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_slist</span><span class="o">.</span><span class="n">getSelectionStrings</span><span class="p">())</span>
+        <span class="k">return</span> <span class="s">&#39;{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span><span class="o">.</span><span class="n">elementCount</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_slist</span><span class="o">.</span><span class="n">getSelectionStrings</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_indexed</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slist</span><span class="o">.</span><span class="n">hasItemPartly</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a ``api.OpenMaya.MBoundingBox`` object amd return it.</span>
+
+<span class="sd">        :rtype: ``api.OpenMaya.MBoundingBox``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">pmax</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MPoint</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">max</span><span class="p">,</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)))</span>
+            <span class="n">pmin</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MPoint</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">min</span><span class="p">,</span> <span class="n">itertools</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bbox</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MBoundingBox</span><span class="p">(</span><span class="n">pmax</span><span class="p">,</span> <span class="n">pmin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bbox</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return int array of current ``Component`` object.</span>
+
+<span class="sd">        :rtype: ``api.OpenMaya.MIntArray``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span><span class="o">.</span><span class="n">getElements</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the `OpenMaya` representation of a component.</span>
+
+<span class="sd">        :rtype: ``(api.OpenMaya.MDagPath, api.OpenMaya.MObject)``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct the ``api.OpenMaya.MFnMesh`` of current component and return</span>
+<span class="sd">        it.</span>
+
+<span class="sd">        :rtype: ``api.OpenMaya.MFnMesh``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MFnMesh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mesh</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a list of component positions as ``api.OpenMaya.MPoint``</span>
+<span class="sd">        objects and return it.</span>
+
+<span class="sd">        :rtype: ``list``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshMapComponent</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">getUVs</span><span class="p">())</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span><span class="o">.</span><span class="n">isComplete</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="o">=</span> <span class="p">[</span><span class="n">api</span><span class="o">.</span><span class="n">MPoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+                                    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">getPoints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">space</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span><span class="o">.</span><span class="n">isComplete</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_points</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_points</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_points</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: ``int``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">apiType</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">typestr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: ``str``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">apiTypeStr</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Component.create"><a class="viewcode-back" href="../../api.html#mampy.Component.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">dagpath</span><span class="p">,</span> <span class="n">comptype</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct empty :class:`Component` attached to dagpath and return it.</span>
+
+<span class="sd">        :param dagpath: str(dagpath), api.OpenMaya.MDagPath</span>
+<span class="sd">        :param comptype: integer</span>
+<span class="sd">        :rtype: :class:`Component`</span>
+
+<span class="sd">        Usage::</span>
+
+<span class="sd">            &gt;&gt;&gt; dagpath = &#39;pCube1&#39;</span>
+<span class="sd">            &gt;&gt;&gt; component = Component.create(dagpath, MFn.kMeshVertComponent)</span>
+<span class="sd">            MeshVert(pCube1.vtx[])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MSelectionList</span><span class="p">()</span>
+            <span class="n">tmp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">dagpath</span><span class="p">)</span>
+            <span class="n">dagpath</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">getDagPath</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">indexed</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MFnSingleIndexedComponent</span><span class="p">()</span>
+        <span class="n">cobj</span> <span class="o">=</span> <span class="n">indexed</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">comptype</span><span class="p">)</span>
+        <span class="n">cfn</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MFnComponent</span><span class="p">(</span><span class="n">cobj</span><span class="p">)</span>
+        <span class="n">cfn</span><span class="o">.</span><span class="n">setObject</span><span class="p">(</span><span class="n">dagpath</span><span class="o">.</span><span class="n">node</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">cobj</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.add"><a class="viewcode-back" href="../../api.html#mampy.Component.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add given index or list of indices to current :class:`Component`</span>
+<span class="sd">        object.</span>
+
+<span class="sd">        :param indices: ``int``, ``sequence``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="s">&#39;__len__&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span><span class="o">.</span><span class="n">addElements</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_indexed</span><span class="o">.</span><span class="n">addElement</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_slist</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.to_face"><a class="viewcode-back" href="../../api.html#mampy.Component.to_face">[docs]</a>    <span class="k">def</span> <span class="nf">to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shothand for ``self.convert_to(toFace=True)``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to</span><span class="p">(</span><span class="n">toFace</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.to_edge"><a class="viewcode-back" href="../../api.html#mampy.Component.to_edge">[docs]</a>    <span class="k">def</span> <span class="nf">to_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shothand for ``self.convert_to(toEdge=True)``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to</span><span class="p">(</span><span class="n">toEdge</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.to_vert"><a class="viewcode-back" href="../../api.html#mampy.Component.to_vert">[docs]</a>    <span class="k">def</span> <span class="nf">to_vert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shothand for ``self.convert_to(toVert=True)``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to</span><span class="p">(</span><span class="n">toVertex</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.to_map"><a class="viewcode-back" href="../../api.html#mampy.Component.to_map">[docs]</a>    <span class="k">def</span> <span class="nf">to_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shothand for ``self.convert_to(toUV=True)``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_to</span><span class="p">(</span><span class="n">toUV</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.convert_to"><a class="viewcode-back" href="../../api.html#mampy.Component.convert_to">[docs]</a>    <span class="k">def</span> <span class="nf">convert_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert current component to given component type and return it.</span>
+
+<span class="sd">        :rtype: :class:`Component`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">MSelectionList</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">cmds</span><span class="o">.</span><span class="n">polyListComponentConversion</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">isEmpty</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s">&#39;Failed to convert {} with keywords: {}&#39;</span>
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">kwargs</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="o">*</span><span class="n">s</span><span class="o">.</span><span class="n">getComponent</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Component.get_complete"><a class="viewcode-back" href="../../api.html#mampy.Component.get_complete">[docs]</a>    <span class="k">def</span> <span class="nf">get_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct complete component and return it.</span>
+
+<span class="sd">        :rtype: :class:`Component`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SET_COMPLETE</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">])</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">attr</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="s">&#39;__call__&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">attr</span>
+
+        <span class="c"># Create new complete component object.</span>
+        <span class="n">complete</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+        <span class="n">complete</span><span class="o">.</span><span class="n">_indexed</span><span class="o">.</span><span class="n">setCompleteData</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">complete</span><span class="o">.</span><span class="n">object</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.get_mesh_shell"><a class="viewcode-back" href="../../api.html#mampy.Component.get_mesh_shell">[docs]</a>    <span class="k">def</span> <span class="nf">get_mesh_shell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extend current :class:`Component` to contained mesh shell and return</span>
+<span class="sd">        new :class:`Component`.</span>
+
+<span class="sd">        :rtype: :class:`Component`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">faces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_face</span><span class="p">()</span>
+        <span class="n">shell</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">faces</span><span class="o">.</span><span class="n">indices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">shell</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">shell</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">cmds</span><span class="o">.</span><span class="n">polySelect</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span><span class="p">),</span> <span class="n">q</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ets</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span> <span class="n">ns</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">faces</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">shell</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">faces</span><span class="o">.</span><span class="n">convert_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.get_uv_shell"><a class="viewcode-back" href="../../api.html#mampy.Component.get_uv_shell">[docs]</a>    <span class="k">def</span> <span class="nf">get_uv_shell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extend current :class:`Component` to contained uv shell and return new</span>
+<span class="sd">        :class:``Component`` object.</span>
+
+<span class="sd">        :rtype: :class:`Component`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">uvs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_map</span><span class="p">()</span>
+        <span class="n">count</span><span class="p">,</span> <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">getUvShellsIds</span><span class="p">()</span>
+        <span class="n">wanted</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">array</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">])</span>
+        <span class="n">uvs</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="k">if</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">wanted</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">uvs</span>
+</div>
+<div class="viewcode-block" id="Component.is_face"><a class="viewcode-back" href="../../api.html#mampy.Component.is_face">[docs]</a>    <span class="k">def</span> <span class="nf">is_face</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shorthand for ``self.is_valid(MFn.kMeshPolygonComponent)``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">MFn</span><span class="o">.</span><span class="n">kMeshPolygonComponent</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.is_edge"><a class="viewcode-back" href="../../api.html#mampy.Component.is_edge">[docs]</a>    <span class="k">def</span> <span class="nf">is_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shorthand for ``self.is_valid(MFn.kMeshEdgeComponent)``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">MFn</span><span class="o">.</span><span class="n">kMeshEdgeComponent</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.is_vert"><a class="viewcode-back" href="../../api.html#mampy.Component.is_vert">[docs]</a>    <span class="k">def</span> <span class="nf">is_vert</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shorthand for ``self.is_valid(MFn.kMeshVertComponent)``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">MFn</span><span class="o">.</span><span class="n">kMeshVertComponent</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.is_map"><a class="viewcode-back" href="../../api.html#mampy.Component.is_map">[docs]</a>    <span class="k">def</span> <span class="nf">is_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shorthand for ``self.is_valid(MFn.kMeshMapComponent)``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">MFn</span><span class="o">.</span><span class="n">kMeshMapComponent</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Component.is_valid"><a class="viewcode-back" href="../../api.html#mampy.Component.is_valid">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comptype</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Whether this is a valid Component object or not.</span>
+
+<span class="sd">        :param comptype: Internal ``OpenMaya.MFn`` int type.</span>
+<span class="sd">        :rtype: ``bool``</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">isNull</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">if</span> <span class="n">comptype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">comptype</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_slist</span><span class="o">.</span><span class="n">isEmpty</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="Component.toggle"><a class="viewcode-back" href="../../api.html#mampy.Component.toggle">[docs]</a>    <span class="k">def</span> <span class="nf">toggle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Toggles Component objects with other objects.</span>
+
+<span class="sd">        If other is not provided toggles with complete component object.</span>
+
+<span class="sd">        :param other: :class:`Component`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">component</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_complete</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">dagpath</span><span class="p">:</span>
+                <span class="n">component</span> <span class="o">=</span> <span class="n">other</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;{0} is not equal to {1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">))</span>
+
+        <span class="n">new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">new</span><span class="o">.</span><span class="n">_slist</span><span class="o">.</span><span class="n">toggle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">component</span><span class="o">.</span><span class="n">object</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new</span>
+</div>
+<div class="viewcode-block" id="Component.translate"><a class="viewcode-back" href="../../api.html#mampy.Component.translate">[docs]</a>    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Translate components with given optional keyword arguments.</span>
+
+<span class="sd">        :param \*\*kwargs: Optional keyword arguments ``cmds.xform`` takes.</span>
+
+<span class="sd">        .. todo:: if self._bbox get new matrix and translate bbox with it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">xform</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="MeshVert"><a class="viewcode-back" href="../../api.html#mampy.MeshVert">[docs]</a><span class="k">class</span> <span class="nc">MeshVert</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
+    <span class="n">__mtype__</span> <span class="o">=</span> <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshVertComponent</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">dagpath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MeshVert</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">__mtype__</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="MeshEdge"><a class="viewcode-back" href="../../api.html#mampy.MeshEdge">[docs]</a><span class="k">class</span> <span class="nc">MeshEdge</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
+    <span class="n">__mtype__</span> <span class="o">=</span> <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshEdgeComponent</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">dagpath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MeshEdge</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">__mtype__</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="MeshPolygon"><a class="viewcode-back" href="../../api.html#mampy.MeshPolygon">[docs]</a><span class="k">class</span> <span class="nc">MeshPolygon</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
+    <span class="n">__mtype__</span> <span class="o">=</span> <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshPolygonComponent</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">dagpath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MeshPolygon</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">__mtype__</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="MeshMap"><a class="viewcode-back" href="../../api.html#mampy.MeshMap">[docs]</a><span class="k">class</span> <span class="nc">MeshMap</span><span class="p">(</span><span class="n">Component</span><span class="p">):</span>
+    <span class="n">__mtype__</span> <span class="o">=</span> <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshMapComponent</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">dagpath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MeshMap</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">__mtype__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">polyEditUV</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">cls</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">dagpath</span> <span class="o">=</span> <span class="p">[</span><span class="s">u&#39;pCube2.vtx[0]&#39;</span><span class="p">,</span> <span class="s">u&#39;pCube2.vtx[2]&#39;</span><span class="p">]</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">Component</span><span class="p">(</span><span class="n">dagpath</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Marcus Albertsson.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.0.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

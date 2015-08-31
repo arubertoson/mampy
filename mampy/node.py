@@ -6,20 +6,24 @@
 
     Classes for Maya node types.
 
+    .. todo:: module docstring.
+
 """
+import logging
+
 import maya.cmds as cmds
 import maya.OpenMaya as oldapi
+import maya.api.OpenMaya as api
 
-try:
-    import maya.api.OpenMaya as api
-except ImportError:
-    import maya.OpenMaya as api
+logger = logging.getLogger(__name__)
+
+
+__all__ = ['DagNode', 'Camera']
 
 
 class Plug(api.MPlug):
-    """class Plug(DagNode)
-
-    Wrapping the MPlug for easier functionality.
+    """
+    Wrapping API ``api.OpenMaya.MPlug`` for easier functionality.
     """
 
     def __init__(self, node, *args, **kwargs):
@@ -48,19 +52,16 @@ class Plug(api.MPlug):
 
 
 class DagFactory(type):
-    """class DagFacotry(dagpath)
+    """Constructs a DagNode from a dagpath or dagpath object.
 
-    Class factory for dag nodes.
+    Returns the DagNode subclass that represents the node type of given
+    dagpath. If no subclass can be found returns DagNode object.
     """
 
     def __call__(cls, dagpath):
-        """Constructs a DagNode from a dagpath or dagpath object.
-
-        Returns the DagNode subclass that represents the node type of given
-        dagpath. If no subclass can be found returns DagNode object.
-        """
-        tmp = api.MSelectionList(); tmp.add(dagpath)
-        dagpath = tmp.getDagPath(0)
+        if isinstance(dagpath, basestring):
+            tmp = api.MSelectionList(); tmp.add(dagpath)
+            dagpath = tmp.getDagPath(0)
 
         if cls is not DagNode:
             return type.__call__(cls, dagpath)
@@ -68,9 +69,8 @@ class DagFactory(type):
         try:
             shape = api.MDagPath.getAPathTo(dagpath.child(0))
         except RuntimeError:
-            dagnode = api.MFnDagNode(dagpath)
             shape = dagpath
-            dagpath = api.MDagPath.getAPathTo(dagnode.parent(0))
+
         for c in cls.__subclasses__():
             if c.__name__.lower() == cmds.nodeType(str(shape)):
                 cls = c
@@ -80,10 +80,22 @@ class DagFactory(type):
 
 
 class DagNode(object):
-    """class DagNode(dagpath)
+    """
+    A base dagnode class, providing most behaviour that Maya Nodes can
+    inherit and override, as necessary.
 
-    Used for easier access to certain object information but keeping access
-    to base functionality.
+    :param dagpath: dagpath str, ``api.OpenMaya.MDagPath``
+
+    Usage::
+
+        >>> import mampy
+        >>> node = mampy.DagNode('pCube1')
+        DagNode('|pCube1')
+
+    .. note::
+
+        :class:`DagNode` does currently lack subclasses. This will be
+        developed as need arises.
     """
     __metaclass__ = DagFactory
 
@@ -110,6 +122,11 @@ class DagNode(object):
 
     @property
     def attributes(self):
+        """
+        Construct and return attribute list that belongs to node.
+
+        :rtype: ``list``
+        """
         if self._attr is None:
             attributes = set(cmds.listAttr(self.fullpath, shortNames=True))
             attributes.update(set(cmds.listAttr(self.fullpath)))
@@ -118,30 +135,51 @@ class DagNode(object):
 
     @property
     def bounding_box(self):
+        """
+        :rtype: ``api.OpenMaya.MBoundingBox``
+        """
         return self._dagnode.boundingBox
 
     @property
     def name(self):
+        """
+        :rtype: ``str``
+        """
         return str(self._dagpath)
 
     @property
     def node(self):
+        """
+        :rtype: ``api.OpenMaya.MObject``
+        """
         return self._dagpath.node()
 
     @property
     def fullpath(self):
+        """
+        :rtype: ``str``
+        """
         return self._dagpath.fullPathName()
 
     @property
     def matrix(self):
+        """
+        :rtype: ``api.OpenMaya.MMatrix``
+        """
         return self._dagnode.transformationMatrix()
 
     @property
     def type(self):
+        """
+        :rtype: ``int``
+        """
         return self._dagpath.apiType()
 
     @property
     def typestr(self):
+        """
+        :rtype: ``str``
+        """
         return cmds.nodeType(self.fullpath)
 
     @classmethod
@@ -149,36 +187,44 @@ class DagNode(object):
         return cls(api.MDagPath.getAPathTo(mobject))
 
     def get_shape(self, index=0):
-        """Return shape at given index. If index is not given return first in
-        list.
+        """
+        Return shape at given index. If index is not given return first
+        in list.
         """
         return self.__class__(self._dagpath.extendToShape(index))
 
     def get_parent(self, index=0):
-        """Return parent at given index. If index is not given return first in
-        list.
+        """
+        Return parent at given index. If index is not given return
+        first in list.
         """
         return self.from_object(self._dagnode.parent(index))
 
     def get_child(self, index=0):
-        """Return child at given index. If index is not given return first in
-        list.
+        """
+        Return child at given index. If index is not given return first
+        in list.
         """
         return self.from_object(self._dagnode.child(index))
 
     def iterchildren(self):
+        """
+        Iterates over the :class:`DagNode` ``api.OpenMaya.MObject`` children.
+        """
         for idx in xrange(self._dagnode.childCount()):
             yield self.from_object(self._dagnode.child(idx))
 
     def iterparents(self):
+        """
+        Iterates over the :class:`DagNode` ``api.OpenMaya.MObject`` parents.
+        """
         for idx in xrange(self._dagnode.parentCount()):
             yield self.from_object(self._dagnode.parent(idx))
 
 
 class Camera(DagNode):
-    """class Camera(dagpath string)
-
-    Wraps Maya Old MFnCamera object to return new api objects.
+    """
+    Wraps ``OpenMaya.MFnCamera``.
     """
 
     def __init__(self, dagpath):
@@ -190,8 +236,18 @@ class Camera(DagNode):
         self._mfncam = oldapi.MFnCamera(dp)
 
     def get_view_direction(self, space=api.MSpace.kWorld):
+        """
+        Return the view direction for the camera.
+
+        :rtype: ``api.OpenMaya.MVector``
+        """
         return api.MVector(self._mfncam.viewDirection(space))
 
     def get_up_direction(self, space=api.MSpace.kWorld):
         return api.MVector(self._mfncam.upDirection(space))
 
+
+if __name__ == '__main__':
+    t = cmds.ls(sl=True).pop()
+    c = DagNode(t)
+    print c

@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
-    mampy.utils
-    ~~~~~~~~~~~
-
-    various helper functions.
-
+This module provides utility functions that are useful for general maya
+script development. These can also be useful for external purposes.
 """
+
 import functools
 import collections
 
@@ -17,8 +13,8 @@ def history_chunk(func):
     """
     History chunk decorator.
 
-    Wraps function inside a history chunk enabling undo for scriptgs inside
-    Maya.
+    Wraps function inside a history chunk enabling undo chunks to be created
+    on python functions.
     """
     @functools.wraps
     def wrapper(*args, **kwargs):
@@ -36,7 +32,8 @@ def history_chunk(func):
 
 
 class OptionVar(collections.MutableMapping):
-    """Dictionary class for accessing and modifying optionVars.
+    """
+    Dictionary class for accessing and modifying optionVars.
 
     Inspired by pymel OptionVarDict class found in pymel.core.language.
     """
@@ -105,7 +102,6 @@ class OptionVar(collections.MutableMapping):
 
 
 class OptionVarList(tuple):
-    """Sequence of option var key list."""
 
     def __new__(cls, val, key):
         return tuple.__new__(cls, val)

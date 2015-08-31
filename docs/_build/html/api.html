@@ -1,0 +1,1026 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API Documentation &mdash; mampy 0.0.2 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="mampy 0.0.2 documentation" href="index.html"/>
+        <link rel="prev" title="Working with Components" href="component.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> mampy
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="component.html">Working with Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="component.html#quick-example">Quick example</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">API Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#main-interface">Main Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#classes">Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#selection-list">Selection List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dagnode">DagNode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#component">Component</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">mampy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>API Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/api.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="module-mampy">
+<span id="api-documentation"></span><span id="api"></span><h1>API Documentation<a class="headerlink" href="#module-mampy" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="main-interface">
+<h2>Main Interface<a class="headerlink" href="#main-interface" title="Permalink to this headline">¶</a></h2>
+<p>All of mampys&#8217; functionality can be accessed by these functions. They
+all return an instance of the main workhorses:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a></li>
+<li><a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a></li>
+<li><a class="reference internal" href="#mampy.DagNode" title="mampy.DagNode"><code class="xref py py-class docutils literal"><span class="pre">DagNode</span></code></a></li>
+</ul>
+<dl class="function">
+<dt id="mampy.selected">
+<code class="descclassname">mampy.</code><code class="descname">selected</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/api.html#selected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs and return a <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> from
+MGlobal.getActiveSelectionList()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="mampy.ls">
+<code class="descclassname">mampy.</code><code class="descname">ls</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/api.html#ls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.ls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs and return a <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> from given args, kwargs.</p>
+<p>Supports all parameters that cmds.ls have.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>*args</strong> &#8211; dagpath or dagpath list.</li>
+<li><strong>**kwargs</strong> &#8211; Optional arguments that <code class="docutils literal"><span class="pre">ls</span></code> takes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mampy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">slist</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">sl</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">dag</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s">&#39;mesh&#39;</span><span class="p">)</span>
+<span class="go">SelectionList([u&#39;pCubeShape1&#39;, u&#39;pCubeShape2&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mampy.ordered_selection">
+<code class="descclassname">mampy.</code><code class="descname">ordered_selection</code><span class="sig-paren">(</span><em>slice_start=None</em>, <em>slice_stop=None</em>, <em>slice_step=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/api.html#ordered_selection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.ordered_selection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs and return an ordered <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>slice_start</strong> &#8211; Where the slice starts from.</li>
+<li><strong>slice_stop</strong> &#8211; Where the slice stops.</li>
+<li><strong>slice_step</strong> &#8211; steps.</li>
+<li><strong>**kwargs</strong> &#8211; Optional arguments that <code class="docutils literal"><span class="pre">ls</span></code> takes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mampy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmds</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">sl</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="go">[u&#39;pCube3&#39;, u&#39;pCube2&#39;, u&#39;pCube4&#39;, u&#39;pCube1&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">slist</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">ordered_selection</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">[u&#39;pCube4&#39;, u&#39;pCube1&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">It seems that Maya 2015 returns an ordered selection by default
+without having the track ordered selection option box.</p>
+</div>
+<dl class="function">
+<dt id="mampy.get_node">
+<code class="descclassname">mampy.</code><code class="descname">get_node</code><span class="sig-paren">(</span><em>dagpath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/api.html#get_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.get_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and return a <a class="reference internal" href="#mampy.DagNode" title="mampy.DagNode"><code class="xref py py-class docutils literal"><span class="pre">DagNode</span></code></a> from given dagpath.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dagpath</strong> &#8211; <code class="docutils literal"><span class="pre">api.OpenMaya.MDagPath</span></code> or dagpath str.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#mampy.DagNode" title="mampy.DagNode"><code class="xref py py-class docutils literal"><span class="pre">DagNode</span></code></a></td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dagpath</span> <span class="o">=</span> <span class="s">&#39;pCube1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dagnode</span> <span class="o">=</span> <span class="n">get_node</span><span class="p">(</span><span class="n">dagpath</span><span class="p">)</span>
+<span class="go">DagNode(&#39;pCube1&#39;)</span>
+</pre></div>
+</div>
+<p>If support for a specific node exists DagNode will try to create it.
+These subclasses must be created manually and <strong>always</strong> have the same
+name as the <code class="docutils literal"><span class="pre">cmds.nodeType</span></code> return value from a dagpath.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dagpath</span> <span class="o">=</span> <span class="s">&#39;persp&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dagnode</span> <span class="o">=</span> <span class="n">get_node</span><span class="p">(</span><span class="n">dagpath</span><span class="p">)</span>
+<span class="go">Camera(&#39;persp&#39;)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mampy.get_component">
+<code class="descclassname">mampy.</code><code class="descname">get_component</code><span class="sig-paren">(</span><em>dagpath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/api.html#get_component"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.get_component" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and return a <a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> from given dagpath.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dagpath</strong> &#8211; dagpath string or a list of dagpath strings</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a></td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dagpath</span> <span class="o">=</span> <span class="s">&#39;pCube1.f[4]&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">component</span> <span class="o">=</span> <span class="n">Component</span><span class="p">(</span><span class="n">dagpath</span><span class="p">)</span>
+<span class="go">Component([&#39;pCube1.f[4]&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mampy.optionVar">
+<code class="descclassname">mampy.</code><code class="descname">optionVar</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/api.html#optionVar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.optionVar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and return a <code class="xref py py-class docutils literal"><span class="pre">OptionVar</span></code> object from cmds.optionVar</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">OptionVar</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">options</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">optionVar</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">options</span><span class="p">[</span><span class="s">&#39;new_option_variable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">options</span><span class="p">[</span><span class="s">&#39;new_option_variable&#39;</span><span class="p">]</span>
+<span class="go">20</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">options</span><span class="p">[</span><span class="s">&#39;TrackOrderedSelection&#39;</span><span class="p">]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="classes">
+<h1>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="selection-list">
+<span id="selectionlist"></span><h2>Selection List<a class="headerlink" href="#selection-list" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mampy.SelectionList">
+<em class="property">class </em><code class="descclassname">mampy.</code><code class="descname">SelectionList</code><span class="sig-paren">(</span><em>slist=None</em>, <em>merge=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList" title="Permalink to this definition">¶</a></dt>
+<dd><p>A sequence like object wrapping the <code class="docutils literal"><span class="pre">api.OpenMaya.MSelectionList</span></code>
+object.</p>
+<p>Emulates the <code class="docutils literal"><span class="pre">api.OpenMaya.MSelectionList</span></code> while trying to behave
+like a list object. The objects in the list can be fetched by index
+making the __iter__ a bit useless. I&#8217;ve taken advantage of this and
+made the __iter__ refer to <code class="docutils literal"><span class="pre">MSelectionList.getSelectionStrings()</span></code>
+to fetch the readable string list that maya usually provides
+through <code class="docutils literal"><span class="pre">cmds.ls</span></code> function. This makes <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a>
+easier to pass around.</p>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mampy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">slist</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">SelectionList</span><span class="p">()</span>
+<span class="go">SelectionList([])</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cmds</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">sl</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="go">[&#39;pCube1&#39;, &#39;pCube2&#39;]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">slist</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">cmds</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">sl</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+<span class="go">SelectionList([u&#39;pCube1&#39;, u&#39;pCube2&#39;])</span>
+</pre></div>
+</div>
+<dl class="classmethod">
+<dt id="mampy.SelectionList.from_ls">
+<em class="property">classmethod </em><code class="descname">from_ls</code><span class="sig-paren">(</span><em>merge=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.from_ls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.from_ls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> from <code class="docutils literal"><span class="pre">cmds.ls</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>merge</strong> &#8211; If found components should be merged to one
+MObject.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mampy.SelectionList.from_selection">
+<em class="property">classmethod </em><code class="descname">from_selection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.from_selection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.from_selection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> from
+<code class="docutils literal"><span class="pre">api.OpenMaya.MGlobal.getActiveSelectionList()</span></code>.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mampy.SelectionList.from_ordered">
+<em class="property">classmethod </em><code class="descname">from_ordered</code><span class="sig-paren">(</span><em>start=None</em>, <em>stop=None</em>, <em>step=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.from_ordered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.from_ordered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> from <code class="docutils literal"><span class="pre">cmds.ls(os=True)</span></code> and
+return it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>start</strong> &#8211; start of slice.</li>
+<li><strong>stop</strong> &#8211; end of slice.</li>
+<li><strong>step</strong> &#8211; slice steps.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.SelectionList.append">
+<code class="descname">append</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends a given dagpath to the end of the list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> &#8211; dagpath string, <code class="docutils literal"><span class="pre">MObject</span></code>,
+<code class="docutils literal"><span class="pre">(api.OpenMaya.MDatPath,</span> <span class="pre">api.OpenMaya.MObject)</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.SelectionList.extend">
+<code class="descname">extend</code><span class="sig-paren">(</span><em>other</em>, <em>strategy=&lt;MagicMock name='mock.OpenMaya.MSelectionList.kMergeNormal' id='58964456'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.extend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extend list with other. s list with given</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>other</strong> &#8211; <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a>, <a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> or
+<code class="docutils literal"><span class="pre">list,</span> <span class="pre">tuple,</span> <span class="pre">set</span></code> of dagpath strings.</li>
+<li><strong>strategy</strong> &#8211; <code class="docutils literal"><span class="pre">api.OpenMaya.MSelectionList</span></code> Merge strategy</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.SelectionList.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of self.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.SelectionList.toggle">
+<code class="descname">toggle</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.toggle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.toggle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Toggles other <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> objects with self.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.SelectionList.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes other <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> objects from self.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.SelectionList.pop">
+<code class="descname">pop</code><span class="sig-paren">(</span><em>index=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.pop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>pops given index from list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.SelectionList.itercomps">
+<code class="descname">itercomps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.itercomps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.itercomps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> <a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a>
+objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.SelectionList.iterdags">
+<code class="descname">iterdags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/slist.html#SelectionList.iterdags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.SelectionList.iterdags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the <a class="reference internal" href="#mampy.SelectionList" title="mampy.SelectionList"><code class="xref py py-class docutils literal"><span class="pre">SelectionList</span></code></a> <a class="reference internal" href="#mampy.DagNode" title="mampy.DagNode"><code class="xref py py-class docutils literal"><span class="pre">DagNode</span></code></a>
+objects.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="dagnode">
+<h2>DagNode<a class="headerlink" href="#dagnode" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mampy.DagNode">
+<em class="property">class </em><code class="descclassname">mampy.</code><code class="descname">DagNode</code><span class="sig-paren">(</span><em>dagpath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/node.html#DagNode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.DagNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base dagnode class, providing most behaviour that Maya Nodes can
+inherit and override, as necessary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dagpath</strong> &#8211; dagpath str, <code class="docutils literal"><span class="pre">api.OpenMaya.MDagPath</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mampy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">DagNode</span><span class="p">(</span><span class="s">&#39;pCube1&#39;</span><span class="p">)</span>
+<span class="go">DagNode(&#39;|pCube1&#39;)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="#mampy.DagNode" title="mampy.DagNode"><code class="xref py py-class docutils literal"><span class="pre">DagNode</span></code></a> does currently lack subclasses. This will be
+developed as need arises.</p>
+</div>
+<dl class="attribute">
+<dt id="mampy.DagNode.attributes">
+<code class="descname">attributes</code><a class="headerlink" href="#mampy.DagNode.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and return attribute list that belongs to node.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">list</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.DagNode.bounding_box">
+<code class="descname">bounding_box</code><a class="headerlink" href="#mampy.DagNode.bounding_box" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">api.OpenMaya.MBoundingBox</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.DagNode.name">
+<code class="descname">name</code><a class="headerlink" href="#mampy.DagNode.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">str</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.DagNode.node">
+<code class="descname">node</code><a class="headerlink" href="#mampy.DagNode.node" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">api.OpenMaya.MObject</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.DagNode.fullpath">
+<code class="descname">fullpath</code><a class="headerlink" href="#mampy.DagNode.fullpath" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">str</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.DagNode.matrix">
+<code class="descname">matrix</code><a class="headerlink" href="#mampy.DagNode.matrix" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">api.OpenMaya.MMatrix</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.DagNode.type">
+<code class="descname">type</code><a class="headerlink" href="#mampy.DagNode.type" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">int</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.DagNode.typestr">
+<code class="descname">typestr</code><a class="headerlink" href="#mampy.DagNode.typestr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">str</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.DagNode.get_shape">
+<code class="descname">get_shape</code><span class="sig-paren">(</span><em>index=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/node.html#DagNode.get_shape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.DagNode.get_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return shape at given index. If index is not given return first
+in list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.DagNode.get_parent">
+<code class="descname">get_parent</code><span class="sig-paren">(</span><em>index=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/node.html#DagNode.get_parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.DagNode.get_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return parent at given index. If index is not given return
+first in list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.DagNode.get_child">
+<code class="descname">get_child</code><span class="sig-paren">(</span><em>index=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/node.html#DagNode.get_child"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.DagNode.get_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return child at given index. If index is not given return first
+in list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.DagNode.iterchildren">
+<code class="descname">iterchildren</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/node.html#DagNode.iterchildren"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.DagNode.iterchildren" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the <a class="reference internal" href="#mampy.DagNode" title="mampy.DagNode"><code class="xref py py-class docutils literal"><span class="pre">DagNode</span></code></a> <code class="docutils literal"><span class="pre">api.OpenMaya.MObject</span></code> children.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.DagNode.iterparents">
+<code class="descname">iterparents</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/node.html#DagNode.iterparents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.DagNode.iterparents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the <a class="reference internal" href="#mampy.DagNode" title="mampy.DagNode"><code class="xref py py-class docutils literal"><span class="pre">DagNode</span></code></a> <code class="docutils literal"><span class="pre">api.OpenMaya.MObject</span></code> parents.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mampy.Camera">
+<em class="property">class </em><code class="descclassname">mampy.</code><code class="descname">Camera</code><span class="sig-paren">(</span><em>dagpath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/node.html#Camera"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Camera" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wraps <code class="docutils literal"><span class="pre">OpenMaya.MFnCamera</span></code>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="component">
+<h2>Component<a class="headerlink" href="#component" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mampy.Component">
+<em class="property">class </em><code class="descclassname">mampy.</code><code class="descname">Component</code><a class="reference internal" href="_modules/mampy/comp.html#Component"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base component class, providing most behavior that other component
+classes can inherit and override, as necessary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dagpath</strong> &#8211; dagpath str, list of dagpath str or
+<code class="docutils literal"><span class="pre">api.OpenMaya.MDagPath</span></code></li>
+<li><strong>compobj</strong> &#8211; <code class="docutils literal"><span class="pre">api.OpenMaya.MObject</span></code></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mampy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">comp</span> <span class="o">=</span> <span class="n">mampy</span><span class="o">.</span><span class="n">Component</span><span class="p">(</span><span class="s">&#39;pCube1.f[0]&#39;</span><span class="p">)</span>
+<span class="go">MeshPolygon(&#39;pCube1.f[0]&#39;)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> does not yet support vertex faces.</p>
+</div>
+<dl class="attribute">
+<dt id="mampy.Component.bounding_box">
+<code class="descname">bounding_box</code><a class="headerlink" href="#mampy.Component.bounding_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a <code class="docutils literal"><span class="pre">api.OpenMaya.MBoundingBox</span></code> object amd return it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">api.OpenMaya.MBoundingBox</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.Component.indices">
+<code class="descname">indices</code><a class="headerlink" href="#mampy.Component.indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return int array of current <code class="docutils literal"><span class="pre">Component</span></code> object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">api.OpenMaya.MIntArray</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.Component.node">
+<code class="descname">node</code><a class="headerlink" href="#mampy.Component.node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <cite>OpenMaya</cite> representation of a component.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">(api.OpenMaya.MDagPath,</span> <span class="pre">api.OpenMaya.MObject)</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.Component.mesh">
+<code class="descname">mesh</code><a class="headerlink" href="#mampy.Component.mesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct the <code class="docutils literal"><span class="pre">api.OpenMaya.MFnMesh</span></code> of current component and return
+it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">api.OpenMaya.MFnMesh</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.Component.points">
+<code class="descname">points</code><a class="headerlink" href="#mampy.Component.points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a list of component positions as <code class="docutils literal"><span class="pre">api.OpenMaya.MPoint</span></code>
+objects and return it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">list</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.Component.type">
+<code class="descname">type</code><a class="headerlink" href="#mampy.Component.type" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">int</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mampy.Component.typestr">
+<code class="descname">typestr</code><a class="headerlink" href="#mampy.Component.typestr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">str</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="mampy.Component.create">
+<em class="property">classmethod </em><code class="descname">create</code><span class="sig-paren">(</span><em>dagpath</em>, <em>comptype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct empty <a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> attached to dagpath and return it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dagpath</strong> &#8211; str(dagpath), api.OpenMaya.MDagPath</li>
+<li><strong>comptype</strong> &#8211; integer</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dagpath</span> <span class="o">=</span> <span class="s">&#39;pCube1&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">component</span> <span class="o">=</span> <span class="n">Component</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">dagpath</span><span class="p">,</span> <span class="n">MFn</span><span class="o">.</span><span class="n">kMeshVertComponent</span><span class="p">)</span>
+<span class="go">MeshVert(pCube1.vtx[])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>indices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add given index or list of indices to current <a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a>
+object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>indices</strong> &#8211; <code class="docutils literal"><span class="pre">int</span></code>, <code class="docutils literal"><span class="pre">sequence</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.to_face">
+<code class="descname">to_face</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shothand for <code class="docutils literal"><span class="pre">self.convert_to(toFace=True)</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.to_edge">
+<code class="descname">to_edge</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.to_edge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.to_edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shothand for <code class="docutils literal"><span class="pre">self.convert_to(toEdge=True)</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.to_vert">
+<code class="descname">to_vert</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.to_vert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.to_vert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shothand for <code class="docutils literal"><span class="pre">self.convert_to(toVert=True)</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.to_map">
+<code class="descname">to_map</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.to_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.to_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shothand for <code class="docutils literal"><span class="pre">self.convert_to(toUV=True)</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.convert_to">
+<code class="descname">convert_to</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.convert_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.convert_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert current component to given component type and return it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.get_complete">
+<code class="descname">get_complete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.get_complete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.get_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct complete component and return it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.get_mesh_shell">
+<code class="descname">get_mesh_shell</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.get_mesh_shell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.get_mesh_shell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extend current <a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> to contained mesh shell and return
+new <a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.get_uv_shell">
+<code class="descname">get_uv_shell</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.get_uv_shell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.get_uv_shell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extend current <a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a> to contained uv shell and return new
+:class:<code class="docutils literal"><span class="pre">Component</span></code> object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.is_face">
+<code class="descname">is_face</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.is_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.is_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shorthand for <code class="docutils literal"><span class="pre">self.is_valid(MFn.kMeshPolygonComponent)</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.is_edge">
+<code class="descname">is_edge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.is_edge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.is_edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shorthand for <code class="docutils literal"><span class="pre">self.is_valid(MFn.kMeshEdgeComponent)</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.is_vert">
+<code class="descname">is_vert</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.is_vert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.is_vert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shorthand for <code class="docutils literal"><span class="pre">self.is_valid(MFn.kMeshVertComponent)</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.is_map">
+<code class="descname">is_map</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.is_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.is_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shorthand for <code class="docutils literal"><span class="pre">self.is_valid(MFn.kMeshMapComponent)</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.is_valid">
+<code class="descname">is_valid</code><span class="sig-paren">(</span><em>comptype=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.is_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether this is a valid Component object or not.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>comptype</strong> &#8211; Internal <code class="docutils literal"><span class="pre">OpenMaya.MFn</span></code> int type.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.toggle">
+<code class="descname">toggle</code><span class="sig-paren">(</span><em>other=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.toggle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.toggle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Toggles Component objects with other objects.</p>
+<p>If other is not provided toggles with complete component object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other</strong> &#8211; <a class="reference internal" href="#mampy.Component" title="mampy.Component"><code class="xref py py-class docutils literal"><span class="pre">Component</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mampy.Component.translate">
+<code class="descname">translate</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mampy/comp.html#Component.translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.Component.translate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate components with given optional keyword arguments.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**kwargs</strong> &#8211; Optional keyword arguments <code class="docutils literal"><span class="pre">cmds.xform</span></code> takes.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">if self._bbox get new matrix and translate bbox with it.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mampy.comp.MeshVert">
+<em class="property">class </em><code class="descclassname">mampy.comp.</code><code class="descname">MeshVert</code><a class="reference internal" href="_modules/mampy/comp.html#MeshVert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.comp.MeshVert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="mampy.comp.MeshEdge">
+<em class="property">class </em><code class="descclassname">mampy.comp.</code><code class="descname">MeshEdge</code><a class="reference internal" href="_modules/mampy/comp.html#MeshEdge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.comp.MeshEdge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="mampy.comp.MeshPolygon">
+<em class="property">class </em><code class="descclassname">mampy.comp.</code><code class="descname">MeshPolygon</code><a class="reference internal" href="_modules/mampy/comp.html#MeshPolygon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.comp.MeshPolygon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="mampy.comp.MeshMap">
+<em class="property">class </em><code class="descclassname">mampy.comp.</code><code class="descname">MeshMap</code><a class="reference internal" href="_modules/mampy/comp.html#MeshMap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mampy.comp.MeshMap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="component.html" class="btn btn-neutral" title="Working with Components" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Marcus Albertsson.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

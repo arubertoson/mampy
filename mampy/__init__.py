@@ -1,33 +1,45 @@
 """
-    Mampy Maya library
-    ~~~~~~~~~~~~~~~~~~
+Mampy Maya library
 
-    Mampy is a Maya API wrapper, written in python. Basic usage:
+Mampy is a Maya API wrapper, written in python. The maya api is overly
+cumbersome to use and not kind to the python sanity, this inspired
+mampy.
 
-        >>> import mampy
-        >>> slist = mampy.selected()
-        >>> component = slist.itercomps()
-        ['list of components']
-        >>> cmds.select(list(components), r=True)
+Basig Usage::
 
-    or to work with a Node:
+    >>> import mampy
+    >>> slist = mampy.selected()
+    >>> component = slist.itercomps()
+    ['list of components']
+    >>> cmds.select(list(components), r=True)
 
-        >>> name = 'persp'
-        >>> camera = DagNode(name)
-        >>> camera.get_shape()
-        'perspShape'
+or to work with a Node::
+
+    >>> name = 'persp'
+    >>> camera = DagNode(name)
+    >>> camera.get_shape()
+    'perspShape'
 
 
-    For more examples see documentation at <http://readthedocs.com>.
+For more examples see documentation at <http://readthedocs.com>.
 
-    :copyright: (c) 2015 Marcus Albertsson.
-    :license: MIT, see LICENSE for more details.
-
+:copyright: (c) 2015 Marcus Albertsson.
+:license: MIT, see LICENSE for more details.
 """
 
-from . import utils
-from .selectionlist import SelectionList
-from .nodes import DagNode
-from .component import Component
-from .api import (ls, selected, ordered_selection, get_node, get_component,
-                  optionVar)
+from mampy import utils
+from mampy.slist import *
+from mampy.node import *
+from mampy.comp import *
+from mampy.api import (ls, selected, ordered_selection, get_node,
+                       get_component, optionVar)
+
+
+__title__ = 'mampy'
+__version__ = '0.0.2'
+__author__ = 'Marcus Albertsson'
+__email__ = 'marcus.arubertoson@gmail.com'
+__url__ = 'http://github.com/arubertoson/maya-mampy'
+__license__ = 'MIT'
+__copyright__ = 'Copyright 2015 Marcus Albertsson'
+

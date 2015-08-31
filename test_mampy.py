@@ -26,16 +26,10 @@ class TestSelectionList(unittest.TestCase):
         """Setup maya for test case."""
         maya.standalone.initialize(name='python')
         cmds.file(test_ma_file, force=True, open=True)
-        self.slist = mampy.utils.SelectionList
+        self.slist = mampy.slist.SelectionList
 
-    def test_empty_SelectionList(self):
-        slist = self.slist()
-        self.assertFalse(slist)
-
-    def test_not_empty_SelectionList(self):
-        cmds.select(cmds.ls(type='mesh'))
-        slist = self.slist.from_selection()
-        self.assertTrue(slist)
+    def test_creation(self):
+        self.assertIsInstance(self.slist(), mampy.slist.SelectionList)
 
     def test_from_selection(self):
         cmds.select(cmds.ls(type='mesh'))
@@ -62,6 +56,15 @@ class TestSelectionList(unittest.TestCase):
         self.assertTrue(str(slist[0]), obj2)
         self.assertTrue(str(slist[1]), obj3)
 
+    def test_nonzero_false(self):
+        slist = self.slist()
+        self.assertFalse(slist)
+
+    def test_nonzero_true(self):
+        cmds.select(cmds.ls(type='mesh'))
+        slist = self.slist.from_selection()
+        self.assertTrue(slist)
+
     def test_str_output(self):
         slist = self.slist.from_ls(transforms=True)
         self.assertIsInstance(str(slist), basestring)
@@ -71,6 +74,10 @@ class TestSelectionList(unittest.TestCase):
         self.assertIsInstance(list(slist), list)
         self.assertIsInstance(list(slist)[0], basestring)
 
+    def test_append(self):
+        slist = self.slist()
+        mesh = 'mampy_1_mesh'
+        slist.append(mesh)
 
 
 

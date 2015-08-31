@@ -7,8 +7,6 @@ import mock
 
 #mock_modules_list
 MOCK_MODULES = [
-  'pymel',
-  'pymel.core',
   'maya',
   'maya.utils',
   'maya.cmds',
@@ -17,71 +15,53 @@ MOCK_MODULES = [
   'maya.OpenMaya',
   'maya.OpenMayaUI',
   'maya.api.OpenMaya',
-  'maya.OpenMayaMPx',
-  'nuke',
-  'nukescripts',
-  'PySide',
-  'PyQt4',
-  'QtGui',
-  'QtCore',
-  'uic',
-  'qdarkstyle',
-  'py2exe',
-  'winshell',
-  'mf',
-  'modulefinder',
-  'yaml',
 ]
 
 sys.modules.update((mod_name, mock.MagicMock()) for mod_name in MOCK_MODULES)
 sys.path.insert(0, os.path.abspath('..'))
 
 
+import mampy
+
+
 extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.todo',
 ]
+
+
+todo_include_todos = True
+add_function_parentheses = True
+autodoc_member_order = 'bysource'
+
+
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
+exclude_patterns = ['_build']
 
 # General information about the project.
 project = u'mampy'
 copyright = u'2015, Marcus Albertsson'
 author = u'Marcus Albertsson'
 
-version = '0.0.1'
-release = '0.0.1'
+version = mampy.__version__
+release = version
 
 language = None
 
-exclude_patterns = ['_build']
 
 pygments_style = 'sphinx'
 
-todo_include_todos = False
 
-# html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 htmlhelp_basename = 'mampydoc'
 
-latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
-
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
-
-# Latex figure (float) alignment
-#'figure_align': 'htbp',
-}
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title,
-#  author, documentclass [howto, manual, or own class]).
+latex_elements = {}
 latex_documents = [
   (master_doc, 'mampy.tex', u'mampy Documentation',
    u'Marcus Albertsson', 'manual'),
@@ -98,17 +78,3 @@ texinfo_documents = [
    author, 'mampy', 'One line description of project.',
    'Miscellaneous'),
 ]
-
-# Documents to append as an appendix to all manuals.
-#texinfo_appendices = []
-
-# If false, no module index is generated.
-#texinfo_domain_indices = True
-
-# How to display URL addresses: 'footnote', 'no', or 'inline'.
-#texinfo_show_urls = 'footnote'
-
-# If true, do not generate a @detailmenu in the "Top" node's menu.
-#texinfo_no_detailmenu = False
-
-autodoc_member_order = 'bysource'
