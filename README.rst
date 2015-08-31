@@ -17,15 +17,11 @@ limited amount of features.
 Features
 ========
 
-    * :class:`SelectionList` object that behaves like an immutable
-        python list.
-    * :class:`Component` object for access to common tasks.
-    * :class:`DagNode` objects for access too common tasks.
-    * :class:`OptionVar` dict object, much like pymels optionVar dict.
+    * Easy to use API with a python feel.
 
 
 Documentation
 =============
 
-For more information visit
+For more information visit the
 `docs <http://maya-mampy.readthedocs.org/en/latest>`_.
