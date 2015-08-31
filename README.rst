@@ -17,7 +17,7 @@ limited amount of features.
 Features
 ========
 
-    * Easy to use API with a python feel.
+* Easy to use API with a python feel.
 
 
 Documentation
