@@ -31,6 +31,7 @@ from mampy import utils
 from mampy.slist import *
 from mampy.node import *
 from mampy.comp import *
+from mampy.packages.mvp import Viewport, RenderGlobals
 from mampy.api import (ls, selected, ordered_selection, get_node,
                        get_component, optionVar)
 
