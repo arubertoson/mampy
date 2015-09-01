@@ -42,12 +42,6 @@ class Component(object):
         MFn.kMeshVtxFaceComponent: 'vtxFace',
         MFn.kMeshMapComponent: 'map',
     }
-    SET_COMPLETE = {
-        MFn.kMeshPolygonComponent: 'numPolygons',
-        MFn.kMeshEdgeComponent: 'numEdges',
-        MFn.kMeshVertComponent: 'numVertices',
-        MFn.kMeshMapComponent: 'numUVs'
-    }
 
     def __new__(cls, dagpath, compobj=None):
         # If class is not called with MDagPath or MObject creates new MDagPath
@@ -243,32 +237,41 @@ class Component(object):
         """
         Shothand for ``self.convert_to(toFace=True)``
         """
-        return self.convert_to(toFace=True, **kwargs)
+        return self.convert_to(MFn.kMeshPolygonComponent, **kwargs)
 
     def to_edge(self, **kwargs):
         """
         Shothand for ``self.convert_to(toEdge=True)``
         """
-        return self.convert_to(toEdge=True, **kwargs)
+        return self.convert_to(MFn.kMeshEdgeComponent, **kwargs)
 
     def to_vert(self, **kwargs):
         """
         Shothand for ``self.convert_to(toVert=True)``
         """
-        return self.convert_to(toVertex=True, **kwargs)
+        return self.convert_to(MFn.kMeshVertComponent, **kwargs)
 
     def to_map(self, **kwargs):
         """
         Shothand for ``self.convert_to(toUV=True)``
         """
-        return self.convert_to(toUV=True, **kwargs)
+        return self.convert_to(MFn.kMeshMapComponent, **kwargs)
 
-    def convert_to(self, **kwargs):
+    def convert_to(self, comptype, **kwargs):
         """
         Convert current component to given component type and return it.
 
         :rtype: :class:`Component`
         """
+        if comptype == MFn.kMeshPolygonComponent:
+            kwargs.update(toFace=True)
+        elif comptype == MFn.kMeshEdgeComponent:
+            kwargs.update(toEdge=True)
+        elif comptype == MFn.kMeshVertComponent:
+            kwargs.update(toVertex=True)
+        elif comptype == MFn.kMeshMapComponent:
+            kwargs.update(toUV=True)
+
         s = api.MSelectionList()
         for dp in cmds.polyListComponentConversion(list(self), **kwargs):
             s.add(dp)
@@ -278,7 +281,6 @@ class Component(object):
                 'Failed to convert {} with keywords: {}'
                 .format(list(self), kwargs)
             )
-
         return self.__class__(*s.getComponent(0))
 
     def get_complete(self):
@@ -287,10 +289,15 @@ class Component(object):
 
         :rtype: :class:`Component`
         """
-        attr = getattr(self.mesh, self.SET_COMPLETE[self.type])
-        count = attr() if hasattr(attr, '__call__') else attr
+        if self.type == MFn.kMeshPolygonComponent:
+            count = self.mesh.numPolygons
+        elif self.type == MFn.kMeshEdgeComponent:
+            count = self.mesh.numEdges
+        elif self.type == MFn.kMeshVertComponent:
+            count = self.mesh.numVertices
+        elif self.type == MFn.kMeshMapComponent:
+            count = self.mesh.numUVs()
 
-        # Create new complete component object.
         complete = self.create(self.dagpath, self.type)
         complete._indexed.setCompleteData(count)
         return self.__class__(self.dagpath, complete.object)
@@ -432,6 +439,5 @@ class MeshMap(Component):
 
 
 if __name__ == '__main__':
-    dagpath = [u'pCube2.vtx[0]', u'pCube2.vtx[2]']
-    c = Component(dagpath)
-
+    c = Component('pPlane1.vtx[48]')
+    print c.get_mesh_shell()
