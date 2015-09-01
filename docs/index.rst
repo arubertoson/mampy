@@ -16,13 +16,11 @@ Mampy aims to be lightweight pymel, it uses a mix between the old and
 new Maya APIs. Mostly to access the datatypes the new API provides
 which are easier to work with than the old api objects.
 
-
 .. note::
-    This module is a work in progress. Features are added when needed
+    This package is a work in progress. Features are added when needed
     so classes are most likely incomplete. But this goes hand in hand
-    with my lightweight philosophy. No need to create functions that
-    "might" be useful one day.
-
+    with my lightweight philosophy, no need to create functions that
+    *might* be useful one day.
 
 
 User Guide
