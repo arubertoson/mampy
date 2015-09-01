@@ -3,6 +3,7 @@ This module contains the ``SelectionList`` class and functions for
 working with ``SelectionList`` objects
 """
 
+import types
 import logging
 
 import maya.cmds as cmds
@@ -47,7 +48,7 @@ class SelectionList(object):
         if isinstance(slist, api.MSelectionList):
             self._slist = api.MSelectionList(slist)
 
-        elif type(slist) in [set, list, tuple]:
+        elif type(slist) in [set, list, tuple, types.GeneratorType]:
             self._slist = api.MSelectionList()
             for dagstr in slist:
                 tmp = api.MSelectionList(); tmp.add(dagstr)
@@ -152,13 +153,20 @@ class SelectionList(object):
             ``list, tuple, set`` of dagpath strings.
         :param strategy: ``api.OpenMaya.MSelectionList`` Merge strategy
         """
-        if (isinstance(other, (list, tuple, set)) and not
-                isinstance(iter(other).next(), api.MDagPath)):
-            other = self.__class__(other)
-        elif type(other) == tuple:
-            mdag, mobj = other
-            self._slist.merge(mdag, mobj, strategy)
-        self._slist.merge(other._slist, strategy)
+        if isinstance(other, (list, tuple, set)):
+            node = iter(other).next()
+            if isinstance(node, api.MDagPath):
+                mdag, mobj = other
+                self._slist.merge(mdag, mobj, strategy)
+            elif isinstance(node, Component):
+                for c in other:
+                    self._slist.merge(c._slist, strategy)
+            else:
+                other = self.__class__(other)
+        elif not isinstance(other, self.__class__):
+            raise TypeError('Invalid type: {}'.format(type(other)))
+        else:
+            self._slist.merge(other._slist, strategy)
 
     def copy(self):
         """
