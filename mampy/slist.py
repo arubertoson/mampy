@@ -153,20 +153,24 @@ class SelectionList(object):
             ``list, tuple, set`` of dagpath strings.
         :param strategy: ``api.OpenMaya.MSelectionList`` Merge strategy
         """
-        if isinstance(other, (list, tuple, set)):
-            node = iter(other).next()
-            if isinstance(node, api.MDagPath):
-                mdag, mobj = other
-                self._slist.merge(mdag, mobj, strategy)
-            elif isinstance(node, Component):
-                for c in other:
-                    self._slist.merge(c._slist, strategy)
-            else:
-                other = self.__class__(other)
-        elif not isinstance(other, self.__class__):
+        try:
+            if hasattr(other, '_slist'):
+                self._slist.merge(other._slist, strategy)
+
+            elif isinstance(other, api.MSelectionList):
+                self._slist.merge(other)
+
+            elif hasattr(other, '__len__'):
+                if other[0] is Component:
+                    for c in other:
+                        self._slist.merge(c._slist)
+                else:
+                    try:
+                        self._slist.merge(self.__class__(other))
+                    except RuntimeError:
+                        pass
+        except TypeError:
             raise TypeError('Invalid type: {}'.format(type(other)))
-        else:
-            self._slist.merge(other._slist, strategy)
 
     def copy(self):
         """
