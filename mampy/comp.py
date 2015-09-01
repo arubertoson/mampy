@@ -34,6 +34,7 @@ class Component(object):
 
     .. note:: :class:`Component` does not yet support vertex faces.
     """
+    __mtype__ = None
 
     TYPESTR = {
         MFn.kMeshVertComponent: 'vtx',
@@ -131,6 +132,18 @@ class Component(object):
         return self._bbox
 
     @property
+    def index(self):
+        """
+        Return first index position in indices or index of component.
+
+        :rtype: ``int``
+        """
+        try:
+            return self._indexed.getElements()[0]
+        except IndexError:
+            raise IndexError('{} is empty.'.format(self.__class__))
+
+    @property
     def indices(self):
         """
         Return int array of current ``Component`` object.
@@ -195,7 +208,7 @@ class Component(object):
         return self.object.apiTypeStr
 
     @classmethod
-    def create(cls, dagpath, comptype):
+    def create(cls, dagpath, comptype=None):
         """
         Construct empty :class:`Component` attached to dagpath and return it.
 
@@ -209,6 +222,7 @@ class Component(object):
             >>> component = Component.create(dagpath, MFn.kMeshVertComponent)
             MeshVert(pCube1.vtx[])
         """
+        comptype = comptype or cls.__mtype__
         if isinstance(dagpath, basestring):
             tmp = api.MSelectionList()
             tmp.add(dagpath)
@@ -298,7 +312,7 @@ class Component(object):
         elif self.type == MFn.kMeshMapComponent:
             count = self.mesh.numUVs()
 
-        complete = self.create(self.dagpath, self.type)
+        complete = self.create(self.dagpath)
         complete._indexed.setCompleteData(count)
         return self.__class__(self.dagpath, complete.object)
 
