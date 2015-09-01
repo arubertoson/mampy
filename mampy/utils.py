@@ -2,33 +2,134 @@
 This module provides utility functions that are useful for general maya
 script development. These can also be useful for external purposes.
 """
-
-import functools
 import collections
 
-import maya.cmds as cmds
+from maya import cmds
+import maya.OpenMaya as oldapi
+
+from PySide import QtGui
+from mampy.packages.mvp import Viewport
+from mampy.packages.contextlib2 import ContextDecorator, contextmanager
 
 
-def history_chunk(func):
+__all__ = ['history_chunk', 'select_keep', 'object_selection_mode',
+           'get_object_under_cursor', 'get_objects_in_view', 'OptionVar']
+
+
+class history_chunk(ContextDecorator):
     """
     History chunk decorator.
 
-    Wraps function inside a history chunk enabling undo chunks to be created
-    on python functions.
+    Wraps function inside a history chunk enabling undo chunks to be
+    created on python functions.
     """
-    @functools.wraps
-    def wrapper(*args, **kwargs):
+    def __enter__(self):
         cmds.undoInfo(openChunk=True)
-        try:
-            result = func(*args, **kwargs)
-        except:
-            cmds.undoInfo(closeChunk=True)
+
+    def __exit__(self, type, value, traceback):
+        cmds.undoInfo(closeChunk=True)
+        if traceback:
             cmds.undo()
-            raise
-        else:
-            cmds.undoInfo(closeChunk=True)
-        return result
-    return wrapper
+
+
+class select_keep(ContextDecorator):
+    """
+    Selection decorator.
+
+    Wraps function to record the current selection and then restore it
+    when function returns.
+    """
+    def __enter__(self):
+        self.slist = oldapi.MSelectionList()
+        self.hlist = oldapi.MSelectionList()
+        self.empty = oldapi.MSelectionList()
+
+        oldapi.MGlobal.getHiliteList(self.hlist)
+        oldapi.MGlobal.getActiveSelectionList(self.slist)
+        oldapi.MGlobal.setActiveSelectionList(self.empty)
+        if self.hlist:
+            oldapi.MGlobal.setHiliteList(self.empty)
+
+        string_list = []
+        self.slist.getSelectionStrings(string_list)
+        return string_list
+
+    def __exit__(self, *exc):
+        if self.hlist:
+            oldapi.MGlobal.setHiliteList(self.hlist)
+            oldapi.MGlobal.setActiveSelectionList(self.slist)
+
+
+@contextmanager
+def object_selection_mode():
+    """
+    Context that executes code in object selection mode and restore
+    mode after execution.
+    """
+    smode = oldapi.MGlobal.kSelectObjectMode
+    oldapi.MGlobal.setSelectionMode(smode)
+
+    hlist = oldapi.MSelectionList()
+    oldapi.MGlobal.getActiveSelectionList(hlist)
+    if not hlist.isEmpty():
+        smode = oldapi.MGlobal.kSelectComponentMode
+    try:
+        yield smode
+    except:
+        raise
+    finally:
+        oldapi.MGlobal.setSelectionMode(smode)
+
+
+@select_keep()
+def get_object_under_cursor():
+    """
+    Return selectable object under cursor.
+    """
+    view = Viewport.active()
+    cursor_pos = view.widget.mapFromGlobal(QtGui.QCursor.pos())
+
+    # Get screen object
+    with object_selection_mode():
+        oldapi.MGlobal.selectFromScreen(
+            cursor_pos.x(),
+            view.widget.height()-cursor_pos.y(),  # Maya counts from below
+            oldapi.MGlobal.kReplaceList,
+            oldapi.MGlobal.kSurfaceSelectMethod
+            )
+    objects = oldapi.MSelectionList()
+    oldapi.MGlobal.getActiveSelectionList(objects)
+
+    # return as object string
+    under_cursor = []
+    objects.getSelectionStrings(under_cursor)
+    try:
+        return under_cursor.pop()
+    except IndexError:
+        return None
+
+
+@select_keep()
+def get_objects_in_view(objects=True):
+    """
+    Return selectable objects on screen.
+    """
+    view = Viewport.active()
+    with object_selection_mode():
+        oldapi.MGlobal.selectFromScreen(
+            0,
+            0,
+            view.widget.width(),
+            view.widget.height(),
+            oldapi.MGlobal.kReplaceList
+            )
+    objects = oldapi.MSelectionList()
+    oldapi.MGlobal.getActiveSelectionList(objects)
+
+    # return the object string list
+    fromScreen = []
+    objects.getSelectionStrings(fromScreen)
+    return fromScreen
 
 
 class OptionVar(collections.MutableMapping):
@@ -124,3 +225,8 @@ class OptionVarList(tuple):
             raise TypeError(
                 'Unsupported datatype. Valid types; strings, ints and floats.'
             )
+
+
+if __name__ == '__main__':
+
+    print get_object_under_cursor()
