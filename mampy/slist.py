@@ -161,7 +161,7 @@ class SelectionList(object):
                 self._slist.merge(other)
 
             elif hasattr(other, '__len__'):
-                if other[0] is Component:
+                if isinstance(other[0], Component):
                     for c in other:
                         self._slist.merge(c._slist)
                 else:
@@ -178,11 +178,11 @@ class SelectionList(object):
         """
         return self.__class__(api.MSelectionList().copy(self._slist))
 
-    def toggle(self, other):
-        """
-        Toggles other :class:`SelectionList` objects with self.
-        """
-        self.extend(other, api.MSelectionList.kXORWithList)
+    # def toggle(self, other):
+    #     """
+    #     Toggles other :class:`SelectionList` objects with self.
+    #     """
+    #     self.extend(other, api.MSelectionList.kXORWithList)
 
     def remove(self, other):
         """
