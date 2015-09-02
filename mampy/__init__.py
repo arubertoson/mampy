@@ -27,13 +27,13 @@ For more examples see documentation at <http://readthedocs.com>.
 :license: MIT, see LICENSE for more details.
 """
 
-from mampy import utils
+from mampy.utils import *
 from mampy.slist import *
 from mampy.node import *
 from mampy.comp import *
 from mampy.packages.mvp import Viewport, RenderGlobals
 from mampy.api import (ls, selected, ordered_selection, get_node,
-                       get_component, optionVar)
+                       get_component, optionVar, get_active_mask)
 
 
 __title__ = 'mampy'
@@ -43,4 +43,3 @@ __email__ = 'marcus.arubertoson@gmail.com'
 __url__ = 'http://github.com/arubertoson/maya-mampy'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Marcus Albertsson'
-
