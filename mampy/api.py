@@ -6,7 +6,7 @@ This module implements the Mampy API.
 
 """
 
-from mampy.utils import OptionVar
+from mampy.utils import OptionVar, SelectionMask
 from mampy.slist import SelectionList
 from mampy.comp import Component
 from mampy.node import DagNode
@@ -24,7 +24,8 @@ def selected():
 
 def ls(*args, **kwargs):
     """
-    Constructs and return a :class:`.SelectionList` from given args, kwargs.
+    Constructs and return a :class:`.SelectionList` from given args,
+    kwargs.
 
     Supports all parameters that cmds.ls have.
 
@@ -77,9 +78,9 @@ def get_node(dagpath):
         >>> dagnode = get_node(dagpath)
         DagNode('pCube1')
 
-    If support for a specific node exists DagNode will try to create it.
-    These subclasses must be created manually and **always** have the same
-    name as the ``cmds.nodeType`` return value from a dagpath.
+    If support for a specific node exists DagNode will try to create
+    it. These subclasses must be created manually and **always** have
+    the same name as the ``cmds.nodeType`` return value from a dagpath.
 
         >>> dagpath = 'persp'
         >>> dagnode = get_node(dagpath)
@@ -106,7 +107,8 @@ def get_component(dagpath):
 
 def optionVar(*args, **kwargs):
     """
-    Construct and return a :class:`.OptionVar` object from cmds.optionVar
+    Construct and return a :class:`.OptionVar` object from
+    cmds.optionVar
 
     :rtype: :class:`.OptionVar`
 
@@ -120,3 +122,27 @@ def optionVar(*args, **kwargs):
         True
     """
     return OptionVar(*args, **kwargs)
+
+
+def get_active_mask():
+    """
+    Construct and return :class:`.SelectionMask` object from active
+    selection mode.
+
+    :rtype: :class:`.SelectionMask`
+
+    Usage::
+
+        >>> smask = mampy.get_active_mask()
+        # By default SelectionMask will show the internal values.
+        SelectionMask([43, 36, 45, 62])
+        ...
+        >>> smask.mask_strings
+        ['kSelectMeshComponents', 'kSelectFacets', 'kSelectMeshFaces',
+         'kSelectComponentsMask']
+        >>> smask.clear()
+        >>> smask.set(kSelectSurfaces)
+
+
+    """
+    return SelectionMask.active()
