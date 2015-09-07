@@ -48,7 +48,7 @@ class SelectionList(object):
         if isinstance(slist, api.MSelectionList):
             self._slist = api.MSelectionList(slist)
 
-        elif type(slist) in [set, list, tuple, types.GeneratorType]:
+        elif type(slist) in [set, list, tuple]:
             self._slist = api.MSelectionList()
             for dagstr in slist:
                 tmp = api.MSelectionList(); tmp.add(dagstr)
@@ -166,7 +166,7 @@ class SelectionList(object):
                         self._slist.merge(c._slist)
                 else:
                     try:
-                        self._slist.merge(self.__class__(other))
+                        self._slist.merge(self.__class__(other)._slist)
                     except RuntimeError:
                         pass
         except TypeError:
