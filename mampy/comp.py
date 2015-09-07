@@ -234,6 +234,9 @@ class Component(object):
         cfn.setObject(dagpath.node())
         return cls(dagpath, cobj)
 
+    def new(self):
+        return self.create(self.dagpath)
+
     def add(self, indices):
         """
         Add given index or list of indices to current :class:`Component`
@@ -384,7 +387,9 @@ class Component(object):
         if comptype is not None and self.type == comptype:
             return True
         else:
-            return not(self._slist.isEmpty())
+            return False
+
+        return not(self._slist.isEmpty())
 
     def toggle(self, other=None):
         """
