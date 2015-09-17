@@ -41,8 +41,8 @@ class Plug(api.MPlug):
     def get(self, *args, **kwargs):
         return cmds.getAttr(self.name, *args, **kwargs)
 
-    def set(self, other, *args, **kwargs):
-        cmds.setAttr(self.name, other.name, *args, **kwargs)
+    def set(self, value, *args, **kwargs):
+        cmds.setAttr(self.name, value, *args, **kwargs)
 
     def connect(self, other, *args, **kwargs):
         cmds.connectAttr(self.name, other.name, *args, **kwargs)
@@ -241,10 +241,11 @@ class Camera(DagNode):
 
         :rtype: ``api.OpenMaya.MVector``
         """
-        return api.MVector(self._mfncam.viewDirection(space))
+        v = self._mfncam.viewDirection(space)
+        return api.MVector(v.x, v.y, v.z)
 
-    def get_up_direction(self, space=api.MSpace.kWorld):
-        return api.MVector(self._mfncam.upDirection(space))
+    # def get_up_direction(self, space=api.MSpace.kWorld):
+        # return api.MVector(self._mfncam.upDirection(space))
 
 
 if __name__ == '__main__':
