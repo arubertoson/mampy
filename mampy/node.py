@@ -68,7 +68,7 @@ class DagFactory(type):
 
         try:
             shape = api.MDagPath.getAPathTo(dagpath.child(0))
-        except RuntimeError:
+        except (RuntimeError, AttributeError):
             shape = dagpath
 
         for c in cls.__subclasses__():
@@ -249,6 +249,23 @@ class Camera(DagNode):
 
 
 if __name__ == '__main__':
-    t = cmds.ls(sl=True).pop()
-    c = DagNode(t)
-    print c
+    # t = cmds.ls(sl=True).pop()
+    import mampy
+    s = mampy.selected()
+    for comp in s.itercomps():
+
+        obj = comp.dagpath.transform()
+
+        t = DagNode.from_object(obj)
+        print t
+        # t = api.MDagPath.getAPathTo(obj)
+        # print t
+
+        # l = api.MSelectionList()
+        # l.add(obj)
+        # dp = l.getDagPath(0)
+        # print dp
+        # trans = DagNode(dagpath)
+        # print trans
+    # c = DagNode(t)
+    # print c
