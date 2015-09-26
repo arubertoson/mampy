@@ -11,6 +11,8 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as api
 from maya.api.OpenMaya import MFn
 
+from mampy.datatypes import BoundingBox
+
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +100,10 @@ class Component(object):
         return '{}'.format(r)
 
     def __len__(self):
-        return self._indexed.elementCount
+        try:
+            return self._indexed.elementCount
+        except RuntimeError:
+            return 0
 
     def __iter__(self):
         return iter(self._slist.getSelectionStrings())
@@ -128,7 +133,10 @@ class Component(object):
         if self._bbox is None:
             pmax = api.MPoint(map(max, itertools.izip(*self.points)))
             pmin = api.MPoint(map(min, itertools.izip(*self.points)))
-            self._bbox = api.MBoundingBox(pmax, pmin)
+
+            self._bbox = BoundingBox(pmax, pmin)
+            if self.__mtype__ == MFn.kMeshMapComponent:
+                self._bbox.boxtype = '2D'
         return self._bbox
 
     @property
@@ -198,7 +206,7 @@ class Component(object):
         """
         :rtype: ``int``
         """
-        return self.object.apiType()
+        return self.__mtype__
 
     @property
     def typestr(self):
@@ -298,7 +306,7 @@ class Component(object):
                 'Failed to convert {} with keywords: {}'
                 .format(list(self), kwargs)
             )
-        return self.__class__(*s.getComponent(0))
+        return Component(*s.getComponent(0))
 
     def get_complete(self):
         """
@@ -350,6 +358,9 @@ class Component(object):
         uvs.add([idx for idx, num in enumerate(array) if num in wanted])
         return uvs
 
+    def is_complete(self):
+        return self._indexed.isComplete()
+
     def is_face(self):
         """
         Shorthand for ``self.is_valid(MFn.kMeshPolygonComponent)``
@@ -381,15 +392,9 @@ class Component(object):
         :param comptype: Internal ``OpenMaya.MFn`` int type.
         :rtype: ``bool``
         """
-        if self.object.isNull():
-            return False
-
-        if comptype is not None and self.type == comptype:
-            return True
-        else:
-            return False
-
-        return not(self._slist.isEmpty())
+        if comptype is None:
+            return not(self.object.isNull())
+        return self.type == comptype
 
     def toggle(self, other=None):
         """
