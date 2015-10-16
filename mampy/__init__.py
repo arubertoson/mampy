@@ -44,3 +44,7 @@ __email__ = 'marcus.arubertoson@gmail.com'
 __url__ = 'http://github.com/arubertoson/maya-mampy'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015 Marcus Albertsson'
+
+# Init
+option_var = OptionVar()
+mel_globals = MelGlobals()
