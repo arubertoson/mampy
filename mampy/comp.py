@@ -197,8 +197,17 @@ class Component(object):
                                     for idx in self.indices]
             else:
                 self._points = self.mesh.getPoints(self.space)
-                if not self._indexed.isComplete:
-                    self._points = [self._points[idx] for idx in self.indices]
+                if not self.__mtype__ == MFn.kMeshVertComponent:
+                    if self.__mtype__ == MFn.kMeshEdgeComponent:
+                        verts = self.mesh.getEdgeVertices
+                    else:
+                        verts = self.mesh.getPolygonVertices
+                    indices = set(i for idx in self.indices for i in verts(idx))
+                else:
+                    indices = self.indices
+
+            if not self._indexed.isComplete:
+                    self._points = [self._points[idx] for idx in indices]
         return self._points
 
     @property
@@ -463,5 +472,5 @@ class MeshMap(Component):
 
 
 if __name__ == '__main__':
-    c = Component('pPlane1.vtx[48]')
-    print c.get_mesh_shell()
+    comp = Component('pCube1.f[4]')
+    print comp.bounding_box
