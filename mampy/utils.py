@@ -2,21 +2,27 @@
 This module provides utility functions that are useful for general maya
 script development. These can also be useful for external purposes.
 """
+import logging
+import textwrap
 import functools
 import collections
 
 from maya import cmds
+from maya import mel
+
 import maya.OpenMaya as oldapi
+import maya.api.OpenMaya as api
 from maya.OpenMaya import MGlobal as mgl
 
 from PySide import QtGui
 from mampy.packages.mvp import Viewport
 from mampy.packages.contextlib2 import ContextDecorator, contextmanager
 
+logger = logging.getLogger(__name__)
 
 __all__ = ['history_chunk', 'select_keep', 'object_selection_mode',
            'get_object_under_cursor', 'get_objects_in_view',
-           'OptionVar', 'SelectionMask', 'DraggerCtx']
+           'OptionVar', 'SelectionMask', 'DraggerCtx', 'MelGlobals']
 
 
 class history_chunk(ContextDecorator):
@@ -519,5 +525,97 @@ class DraggerCtx(object):
         """
         cmds.setToolTo(self.name)
 
+
+class MelGlobals(collections.Mapping):
+
+    MELTYPES = {'string': str, 'int': int, 'float': float,
+                'vector': api.MVector}
+    TYPE_MAP = {}
+    key_values = {}
+
+    def __init__(self, *args, **kwargs):
+        super(MelGlobals, self).__init__(*args, **kwargs)
+        self._globals = mel.eval('env;')
+
+    def __getitem__(self, key):
+        try:
+            return self.key_values[key]
+        except KeyError:
+            r = self.get(key)
+            self.key_values[key] = r
+            return r
+
+    def __iter__(self):
+        for var in self._globals:
+            if var.startswith('$'):
+                var = var[1:]
+            yield var
+
+    def __len__(self):
+        return len(self._globals)
+
+    def _format_var(self, var):
+        if not var.startswith('$'):
+            var = '$' + var
+        if var.endswith('[]'):
+            var = var[:-2]
+        return var
+
+    def _get_var_type(self, var):
+        try:
+            return self.TYPE_MAP[var]
+        except KeyError:
+            pass
+
+        t = mel.eval('whatIs "{}"'.format(var)).split()
+        if t[0].startswith('Unknown'):
+            raise KeyError('{}'.format(var))
+
+        if len(t) == 2 and t[1].startswith('variable'):
+            self.TYPE_MAP[var] = t[0]
+            return t[0]
+        raise TypeError('Cannot determine type of {}'.format(var))
+
+    def _get_declare(self, type, var):
+        if type.endswith('[]'):
+            type = type[:-2]
+            var += '[]'
+        return 'global {} {}'.format(type, var)
+
+    def get(self, var, type=None):
+
+        var = self._format_var(var)
+        if type is None:
+            type = self._get_var_type(var)
+
+        if type.endswith('[]'):
+            proc_name = 'mampy_get_global_' + var[1:].replace('[]', 'array')
+        else:
+            proc_name = 'mampy_get_global_' + type
+
+        try:
+            global_declare = self._get_declare(type, var)
+            cmd = textwrap.dedent('''
+                global proc {type} {proc_name}()
+                {{
+                    {global_declare};
+                    return {var};
+                }}
+                {proc_name}()
+            '''.format(**locals()))
+            result = mel.eval(cmd)
+        except RuntimeError:
+            raise RuntimeError('{} is an undeclared variable.'.format(var))
+
+        try:
+            if type.endswith('[]'):
+                return tuple(mel.eval(cmd))
+            else:
+                return self.MELTYPES[type](mel.eval(cmd))
+        except RuntimeError:
+            raise RuntimeError('{}'.format(cmd))
+
+
 if __name__ == '__main__':
-    print get_object_under_cursor()
+    m = MelGlobals()
+    import time
