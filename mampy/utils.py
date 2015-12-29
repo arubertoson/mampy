@@ -238,7 +238,7 @@ class OptionVarList(tuple):
 
 class SelectionMask(object):
     """
-    Selection mask class for accessing and chaning selection mask
+    Selection mask class for accessing and changing selection mask
     information.
     """
 
