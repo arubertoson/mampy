@@ -81,5 +81,63 @@ class TestSelectionList(unittest.TestCase):
 
 
 
+
+mask = mampy.utils.SelectionMask()
+
+
+def object_mode():
+    mask.set_mode(mask.kSelectObjectMode)
+    objects = cmds.ls(hl=True)
+    cmds.hilite(objects, u=True)
+    cmds.select(objects, r=True)
+
+
+def component_mode():
+    mask.set_mode(mask.kSelectComponentMode)
+    cmds.hilite(cmds.ls(sl=True))
+
+
+def vertex_mask():
+    component_mode()
+    mask.set_mask(mask.kSelectVertices)
+    for i in [mask.kSelectLatticePoints, mask.kSelectCVs,
+              mask.kSelectParticles]:
+        mask.add(i)
+
+
+def edge_mask():
+    component_mode()
+    mask.set_mask(mask.kSelectEdges)
+
+
+def face_mask():
+    component_mode()
+    mask.set_mask(mask.kSelectFacets)
+
+
+def map_mask():
+    component_mode()
+    mask.set_mask(mask.kSelectMeshUVs)
+
+
+def convert(mode, **args):
+    """Convert current selection to given mode."""
+    s, cl = mampy.selected(), mampy.SelectionList()
+    for i in s.itercomps():
+        if mode == 'vert':
+            cl.append(i.to_vert(**args))
+            vertex_mask()
+        elif mode == 'edge':
+            cl.append(i.to_edge(**args))
+        elif mode == 'face':
+            cl.append(i.to_face(**args))
+            face_mask()
+        elif mode == 'map':
+            cl.append(i.to_map(**args))
+            map_mask()
+    cmds.select(list(cl))
+
+
 if __name__ == '__main__':
-    unittest.main()
+    convert('vert', border=True)
+
