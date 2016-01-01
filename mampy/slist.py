@@ -101,6 +101,9 @@ class SelectionList(object):
     def __hash__(self):
         return hash(list(self))
 
+    def index(self, value):
+        return self._slist.getSelectionStrings().index(value)
+
     @classmethod
     def from_ls(cls, merge=True, **kwargs):
         """
