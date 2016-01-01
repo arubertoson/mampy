@@ -32,6 +32,7 @@ from mampy.slist import *
 from mampy.node import *
 from mampy.comp import *
 from mampy.datatypes import *
+from mampy.exceptions import *
 from mampy.packages.mvp import Viewport, RenderGlobals
 from mampy.packages.pathlib import Path
 from mampy.api import (ls, selected, ordered_selection, get_node,
