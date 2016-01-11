@@ -71,7 +71,7 @@ class SelectionList(object):
             raise TypeError('{} does not support slice.'
                             .format(self.__class__.__name__))
 
-        mdag, mobj = self._slist.getComponent(key)
+        mdag, mobj = self._slist.getComponent(len(self)-1 if key == -1 else key)
         if mobj.isNull():
             return DagNode(mdag)
         return Component(mdag, mobj)
@@ -193,10 +193,11 @@ class SelectionList(object):
         """
         self.extend(other, api.MSelectionList.kRemoveFromList)
 
-    def pop(self, index=-1):
+    def pop(self, index=None):
         """
         pops given index from list.
         """
+        index = len(self)-1 if index is None else index
         value = self[index]
         self._slist.remove(index)
         return value
