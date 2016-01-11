@@ -195,6 +195,7 @@ class Component(object):
                 if not self._indexed.isComplete:
                     self._points = [api.MPoint(self._points[idx])
                                     for idx in self.indices]
+                    return self._points
             else:
                 self._points = self.mesh.getPoints(self.space)
                 if not self.__mtype__ == MFn.kMeshVertComponent:
@@ -202,7 +203,8 @@ class Component(object):
                         verts = self.mesh.getEdgeVertices
                     else:
                         verts = self.mesh.getPolygonVertices
-                    indices = set(i for idx in self.indices for i in verts(idx))
+                    indices = set(i for idx in self.indices
+                                  for i in verts(idx))
                 else:
                     indices = self.indices
 
@@ -296,6 +298,10 @@ class Component(object):
         Convert current component to given component type and return it.
 
         :rtype: :class:`Component`
+
+        .. note:: for some reason converting from map to vertex with
+            "border" argument will yield no result with
+            polyListComponentConversion.
         """
         if comptype == MFn.kMeshPolygonComponent:
             kwargs.update(toFace=True)
@@ -368,7 +374,7 @@ class Component(object):
         return uvs
 
     def is_complete(self):
-        return self._indexed.isComplete()
+        return self._indexed.isComplete
 
     def is_face(self):
         """
