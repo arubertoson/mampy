@@ -10,6 +10,7 @@
         * module docstring.
         * rewrite as plugin? As it stands the script collection can't
         be used with certain api functions.
+        * look into options for undo/redo functionality with api
 
 """
 import math
@@ -23,7 +24,14 @@ import maya.api.OpenMaya as api
 logger = logging.getLogger(__name__)
 
 
-__all__ = ['DagNode', 'Camera']
+__all__ = ['DagNode', 'Camera', 'Transform']
+
+
+def _space(kspace):
+    return {
+        api.MSpace.kWorld: {'worldSpace': True},
+        api.MSpace.kObject: {'worldSpace': True},
+    }[kspace]
 
 
 class Plug(api.MPlug):
@@ -116,7 +124,22 @@ class DagNode(object):
     def __str__(self):
         return '{}'.format(self.fullpath)
 
+    def __eq__(self, other):
+        return self._dagpath == other._dagpath
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __nonzero__(self):
+        return self.node.isNull()
+
+    def __hash__(self):
+        return hash(self.fullpath)
+
     def __contains__(self, mobject):
+        """
+        .. note:: Just here for backwards compability.
+        """
         return self.hasChild(mobject)
 
     def __getattr__(self, name):
@@ -204,6 +227,8 @@ class DagNode(object):
         """
         if isinstance(other, basestring):
             n = cmds.parent(self.name, other, **kwargs)[0]
+        elif other is None or other.type == api.MFn.kWorld:
+            n = cmds.parent(self.name, world=True, **kwargs)[0]
         else:
             n = cmds.parent(self.name, other.name, **kwargs)[0]
         self = self.__class__(n)
@@ -334,24 +359,31 @@ class Transform(DagNode):
     def set_pivot(self, point, space=api.MSpace.kWorld):
         if isinstance(point, api.MVector):
             point = api.MPoint(point)
-        self._mfntrans.setRotatePivot(point, space, True)
-        self._mfntrans.setScalePivot(point, space, True)
+        cmds.xform(self._dagpath, pivots=list(point)[:3], **_space(space))
 
-    def set_rotate_pivot(self, point, space=api.MSpace.kWorld):
-        if isinstance(point, api.MVector):
-            point = api.MPoint(point)
-        self._mfntrans.setRotatePivot(point, space, True)
+    # Needs a doIt function to register undo function
+    #     self._mfntrans.setRotatePivot(point, space, True)
+    #     self._mfntrans.setScalePivot(point, space, True)
 
-    def set_scale_pivot(self, point, space=api.MSpace.kWorld):
-        if isinstance(point, api.MVector):
-            point = api.MPoint(point)
-        self._mfntrans.setScalePivot(point, space, True)
+    # def set_rotate_pivot(self, point, space=api.MSpace.kWorld):
+    #     if isinstance(point, api.MVector):
+    #         point = api.MPoint(point)
+    #     self._mfntrans.setRotatePivot(point, space, True)
+
+    # def set_scale_pivot(self, point, space=api.MSpace.kWorld):
+    #     if isinstance(point, api.MVector):
+    #         point = api.MPoint(point)
+    #     self._mfntrans.setScalePivot(point, space, True)
 
 
 if __name__ == '__main__':
-    c = DagNode('pCube9')
-    trns = c.get_transform()
-    print trns.transforms.rotate
+    p = set([DagNode('pCube5'), DagNode('pCube3')])
+    c = set([DagNode('pCube5'), DagNode('pCube3')])
+
+
+    print p == c
+    # trns = p.get_transform()
+    # trns.set_pivot(api.MVector(0, 0, 0))
 
 
     # cm = c._dagnode.transformationMatrix()
