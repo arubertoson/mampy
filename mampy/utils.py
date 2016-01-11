@@ -15,14 +15,28 @@ import maya.api.OpenMaya as api
 from maya.OpenMaya import MGlobal as mgl
 
 from PySide import QtGui
+import mampy
 from mampy.packages.mvp import Viewport
 from mampy.packages.contextlib2 import ContextDecorator, contextmanager
 
 logger = logging.getLogger(__name__)
 
-__all__ = ['history_chunk', 'select_keep', 'object_selection_mode',
-           'get_object_under_cursor', 'get_objects_in_view',
-           'OptionVar', 'SelectionMask', 'DraggerCtx', 'MelGlobals']
+__all__ = ['get_outliner_index', 'history_chunk', 'select_keep',
+           'get_object_under_cursor',  # 'object_selection_mode'
+           'get_objects_in_view', 'OptionVar', 'SelectionMask',
+           'DraggerCtx', 'MelGlobals', 'HistoryList']
+
+
+def get_outliner_index(dagnode):
+    """
+    Return the current index of the given node in the outliner.
+    """
+    if dagnode.is_root():
+        return mampy.ls(l=True, assemblies=True).index(dagnode.name)
+    else:
+        outliner = mampy.ls(dag=True, tr=True, l=True)
+        parent = dagnode.get_parent()
+        return outliner.index(dagnode.name) - outliner.index(parent.name)
 
 
 class history_chunk(ContextDecorator):
@@ -43,51 +57,72 @@ class history_chunk(ContextDecorator):
 
 class select_keep(ContextDecorator):
     """
-    Selection decorator.
-
-    Wraps function to record the current selection and then restore it
-    when function returns.
+    Context Decorator that restore selection after call.
     """
     def __enter__(self):
-        self.slist = oldapi.MSelectionList()
-        self.hlist = oldapi.MSelectionList()
-        self.empty = oldapi.MSelectionList()
+        self.slist = cmds.ls(sl=True)
+        self.hlist = cmds.ls(hl=True)
 
-        oldapi.MGlobal.getHiliteList(self.hlist)
-        oldapi.MGlobal.getActiveSelectionList(self.slist)
-        oldapi.MGlobal.setActiveSelectionList(self.empty)
         if self.hlist:
-            oldapi.MGlobal.setHiliteList(self.empty)
+            cmds.hilite(self.hlist, toggle=True)
 
-        string_list = []
-        self.slist.getSelectionStrings(string_list)
-        return string_list
-
-    def __exit__(self, *exc):
+    def __exit__(self, *args):
+        cmds.select(self.slist, r=True)
         if self.hlist:
-            oldapi.MGlobal.setHiliteList(self.hlist)
-            oldapi.MGlobal.setActiveSelectionList(self.slist)
+            cmds.hilite(self.hlist)
 
 
-@contextmanager
-def object_selection_mode():
+def get_active_flags_in_mask(object=True):
     """
-    Context that executes code in object selection mode and restore
-    mode after execution.
+    Return dict object with current state of flags in selection mask.
     """
-    smode = oldapi.MGlobal.kSelectObjectMode
-    oldapi.MGlobal.setSelectionMode(smode)
+    object_flags = [
+        'handle', 'ikHandle', 'ikEndEffector', 'joint', 'light',
+        'camera', 'lattice', 'cluster', 'sculpt', 'nonlinear', 'nurbsCurve',
+        'nurbsSurface', 'curveOnSurface', 'polymesh', 'subdiv', 'stroke',
+        'plane', 'particleShape', 'emitter', 'field', 'fluid', 'hairSystem',
+        'follicle', 'nCloth', 'nRigid', 'dynamicConstraint', 'nParticleShape',
+        'collisionModel', 'spring', 'rigidBody', 'rigidConstraint',
+        'locatorXYZ', 'orientationLocator', 'locatorUV', 'dimension',
+        'texture', 'implicitGeometry', 'locator', 'curve'
+    ]
+    component_flags = [
+        'controlVertex', 'hull', 'editPoint', 'polymeshVertex',
+        'polymeshEdge', 'polymeshFreeEdge', 'polymeshFace', 'polymeshUV',
+        'polymeshVtxFace', 'vertex', 'edge', 'facet', 'curveParameterPoint',
+        'curveKnot', 'surfaceParameterPoint', 'surfaceKnot', 'surfaceRange',
+        'surfaceEdge', 'surfaceFace', 'surfaceUV', 'isoparm',
+        'subdivMeshPoint', 'subdivMeshEdge', 'subdivMeshFace', 'subdivMeshUV',
+        'latticePoint', 'particle', 'springComponent', 'jointPivot',
+        'scalePivot', 'rotatePivot', 'selectHandle', 'localRotationAxis',
+        'imagePlane',
+    ]
+    flag_list = object_flags if object else component_flags
+    return {i: cmds.selectType(q=True, **{i: True}) for i in flag_list}
 
-    hlist = oldapi.MSelectionList()
-    oldapi.MGlobal.getActiveSelectionList(hlist)
-    if not hlist.isEmpty():
-        smode = oldapi.MGlobal.kSelectComponentMode
-    try:
-        yield smode
-    except:
-        raise
-    finally:
-        oldapi.MGlobal.setSelectionMode(smode)
+
+class object_mode(ContextDecorator):
+    """
+    Context Decorator that makes call execute in Maya object mode.
+    """
+    def __enter__(self):
+        self.object_mode = cmds.selectMode(q=True, object=True)
+        if not self.object_mode:
+            cmds.selectMode(object=True)
+            self.compk = get_active_flags_in_mask(object=False)
+
+        self.objk = get_active_flags_in_mask(object=True)
+        # make sure all objects can be selected.
+        cmds.selectType(allObjects=True)
+
+    def __exit__(self, *args):
+        # Restore object selection mask.
+        cmds.selectType(**self.objk)
+
+        # restore mode
+        if not self.object_mode:
+            cmds.selectMode(component=True)
+            cmds.selectType(**self.compk)
 
 
 @select_keep()
@@ -99,15 +134,15 @@ def get_object_under_cursor():
     cursor_pos = view.widget.mapFromGlobal(QtGui.QCursor.pos())
 
     # Get screen object
-    with object_selection_mode():
+    with object_mode():
         oldapi.MGlobal.selectFromScreen(
             cursor_pos.x(),
             view.widget.height()-cursor_pos.y(),  # Maya counts from below
             oldapi.MGlobal.kReplaceList,
             oldapi.MGlobal.kSurfaceSelectMethod
             )
-    objects = oldapi.MSelectionList()
-    oldapi.MGlobal.getActiveSelectionList(objects)
+        objects = oldapi.MSelectionList()
+        oldapi.MGlobal.getActiveSelectionList(objects)
 
     # return as object string
     under_cursor = []
@@ -124,7 +159,7 @@ def get_objects_in_view(objects=True):
     Return selectable objects on screen.
     """
     view = Viewport.active()
-    with object_selection_mode():
+    with object_mode():
         oldapi.MGlobal.selectFromScreen(
             0,
             0,
@@ -132,8 +167,8 @@ def get_objects_in_view(objects=True):
             view.widget.height(),
             oldapi.MGlobal.kReplaceList
             )
-    objects = oldapi.MSelectionList()
-    oldapi.MGlobal.getActiveSelectionList(objects)
+        objects = oldapi.MSelectionList()
+        oldapi.MGlobal.getActiveSelectionList(objects)
 
     # return the object string list
     fromScreen = []
@@ -147,7 +182,6 @@ class OptionVar(collections.MutableMapping):
 
     Inspired by pymel OptionVarDict class found in pymel.core.language.
     """
-
     def __call__(self, *args, **kwargs):
         return cmds.optionVar(*args, **kwargs)
 
@@ -156,49 +190,45 @@ class OptionVar(collections.MutableMapping):
 
     def __getitem__(self, key):
         if key not in self:
-            raise KeyError(key)
+            raise KeyError()
 
         val = cmds.optionVar(q=key)
-        if isinstance(val, list):
+        if isinstance(val, (list)):
             val = OptionVarList(val, key)
         return val
 
     def __setitem__(self, key, val):
         if isinstance(val, basestring):
-            return cmds.optionVar(stringValue=[key, val])
+            return cmds.optionVar(stringValue=(key, val))
 
         elif isinstance(val, (int, bool)):
-            return cmds.optionVar(intValue=[key, int(val)])
+            return cmds.optionVar(intValue=(key, val))
 
         elif isinstance(val, float):
-            return cmds.optionVar(floatValue=[key, val])
+            return cmds.optionVar(floatValue=(key, val))
 
         elif isinstance(val, (set, list, tuple, xrange)):
             if len(val) == 0:
-                return cmds.optionVar(clearArray=key)
+                return cmds.optionVar(ca=True)
 
-            sequencetype = type(iter(val).next())
-            if issubclass(sequencetype, basestring):
+            seq_type = type(iter(val).next())
+            if issubclass(seq_type, basestring):
                 flag = 'stringValue'
-            elif issubclass(sequencetype, int):
+            elif issubclass(seq_type, int):
                 flag = 'intValue'
-            elif issubclass(sequencetype, float):
+            elif issubclass(seq_type, float):
                 flag = 'floatValue'
             else:
                 raise TypeError(
                     '{0!r} is unsupported, valid types are; '
-                    'strings, ints and floats.'.format(sequencetype)
+                    'strings, ints and floats.'.format(seq_type)
                 )
-
             flag += 'Append'
             for each in val:
-                cmds.optionVar(**{flag: [key, each]})
-
-    def __iter__(self):
-        return iter(self.keys())
+                cmds.optionVar(**{flag: (key, each)})
 
     def __len__(self):
-        return len(self.keys())
+        return self.keys()
 
     def pop(self, key):
         val = cmds.optionVar(q=key)
@@ -207,33 +237,68 @@ class OptionVar(collections.MutableMapping):
 
     __delitem__ = pop
 
+    def iterkeys(self):
+        return iter(self.keys())
+
+    __iter__ = iterkeys
+
     def keys(self):
         return cmds.optionVar(list=True)
 
 
-class OptionVarList(tuple):
+class OptionVarList(collections.Sequence):
 
-    def __new__(cls, val, key):
-        return tuple.__new__(cls, val)
-
-    def __init__(self, val, key):
+    def __init__(self, items, key):
+        self.items = items
         self.key = key
+        self.type = type(items[0])
+        if self.type in (unicode, str):
+            self.type = basestring
+
+    def __repr__(self):
+        return '{}({}({}))'.format(self.__class__.__name__, self.key,
+                                   self.items)
+
+    def __str__(self):
+        return '{}'.format(self.items)
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, idx):
+        return self.items[idx]
+
+    def __reversed__(self):
+        cmds.optionVar(clearArray=self.key)
+        for i in reversed(self.items):
+            self.append(i)
+
+    def pop(self, idx):
+        val = self.items.pop(idx)
+        cmds.optionVar(removeFromArray=(self.key, idx))
+        return val
+
+    def clear(self):
+        cmds.optionVar(clearArray=self.key)
 
     def append(self, val):
-        """Appends given value to end of optionVar list."""
-        if isinstance(val, basestring):
-            return cmds.optionVar(stringValueAppend=[self.key, val])
+        """
+        Appends given value to end of optionVar list.
+        """
+        if not isinstance(val, self.type):
+            raise TypeError('Valid type for {} is {}, value given was: {}'
+                            .format(self.key, self.type, type(val)))
 
-        elif isinstance(val, int):
-            return cmds.optionVar(intValueAppend=[self.key, val])
-
+        if isinstance(val, int):
+            cmds.optionVar(intValueAppend=(self.key, val))
+        elif isinstance(val, basestring):
+            cmds.optionVar(stringValueAppend=(self.key, val))
         elif isinstance(val, float):
-            return cmds.optionVar(floatValueAppend=[self.key, val])
-
+            cmds.optionVar(floatValueAppend=(self.key, val))
         else:
-            raise TypeError(
-                'Unsupported datatype. Valid types; strings, ints and floats.'
-            )
+            raise TypeError('Valid type for {} is {}'.format(self.key,
+                            self.type))
+        self.items = cmds.optionVar(q=self.key)
 
 
 class SelectionMask(object):
@@ -616,6 +681,93 @@ class MelGlobals(collections.Mapping):
             raise RuntimeError('{}'.format(cmd))
 
 
+class HistoryList(object):
+    """
+    Stores current jump history
+    """
+    LIST_LIMIT = 20
+    LIST_TRIMMED_SIZE = 15
+
+    def __init__(self):
+        self.history_list = []
+
+        self.current_item = 0
+        self.key_counter = 0
+
+    def __len__(self):
+        return len(self.history_list)
+
+    def push_selection(self, elements):
+        """
+        Push the current selection into this history.
+        """
+        if not elements:
+            return
+
+        self.clear_history_after_current()
+
+        selected_elements = set(list(elements))
+        if self.history_list != []:
+            first_item = self.history_list[-1]
+            if first_item == selected_elements:
+                return
+
+        # set the selected item as the current item
+        self.history_list.append(selected_elements)
+        self.trim_selections()
+
+        logger.debug(self.history_list)
+
+    def jump_back(self, active_elmenets):
+        """
+        Return element behind of active element in history_list.
+        """
+        if self.current_item == 0:
+            self.push_selection(active_elmenets)
+            self.current_item = -1
+
+        if self.current_item == -len(self.history_list):
+            return None
+
+        self.current_item -= 1
+        return list(self.history_list[self.current_item])
+
+    def jump_forward(self, active_elmenets):
+        """
+        Return element in front of active element in history_list.
+        """
+        if self.history_list == []:
+            return None
+
+        # Already at the front
+        if self.current_item >= -1:
+            return None
+
+        self.current_item += 1
+        return list(self.history_list[self.current_item])
+
+    def remove_element(self, element):
+        i = 0
+        while (i > -len(self.history_list)):
+            i -= 1
+            if self.history_list[i] == element:
+                del self.history_list[i]
+                if self.current_item <= i:
+                    self.current_item += 1
+
+    def clear_history_after_current(self):
+        if self.current_item == 0:
+            return
+        del self.history_list[self.current_item + 1:]
+        self.current_item = 0
+
+    def trim_selections(self):
+        """
+        Trim everything too old when reaching list limit.
+        """
+        if len(self.history_list) > self.LIST_LIMIT:
+            del self.history_list[: len(self.history_list) - self.LIST_TRIMMED_SIZE]
+
+
 if __name__ == '__main__':
-    m = MelGlobals()
-    import time
+    print get_object_under_cursor()
