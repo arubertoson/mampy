@@ -2,6 +2,7 @@
 This module provides utility functions that are useful for general maya
 script development. These can also be useful for external purposes.
 """
+import sys
 import logging
 import textwrap
 import functools
@@ -12,19 +13,20 @@ from maya import mel
 
 import maya.OpenMaya as oldapi
 import maya.api.OpenMaya as api
-from maya.OpenMaya import MGlobal as mgl
 
 from PySide import QtGui
 import mampy
 from mampy.packages.mvp import Viewport
-from mampy.packages.contextlib2 import ContextDecorator, contextmanager
-
-logger = logging.getLogger(__name__)
+from mampy.packages.contextlib2 import ContextDecorator
 
 __all__ = ['get_outliner_index', 'history_chunk', 'select_keep',
            'get_object_under_cursor',  # 'object_selection_mode'
-           'get_objects_in_view', 'OptionVar', 'SelectionMask',
-           'DraggerCtx', 'MelGlobals', 'HistoryList']
+           'get_objects_in_view', 'OptionVar', 'DraggerCtx', 'MelGlobals',
+           'HistoryList']
+
+
+logger = logging.getLogger(__name__)
+EPS = sys.float_info.epsilon
 
 
 def get_outliner_index(dagnode):
@@ -98,7 +100,7 @@ def get_active_flags_in_mask(object=True):
         'imagePlane',
     ]
     flag_list = object_flags if object else component_flags
-    return {i: cmds.selectType(q=True, **{i: True}) for i in flag_list}
+    return [i for i in flag_list if cmds.selectType(q=True, **{i: True})]
 
 
 class object_mode(ContextDecorator):
@@ -299,135 +301,6 @@ class OptionVarList(collections.Sequence):
             raise TypeError('Valid type for {} is {}'.format(self.key,
                             self.type))
         self.items = cmds.optionVar(q=self.key)
-
-
-class SelectionMask(object):
-    """
-    Selection mask class for accessing and changing selection mask
-    information.
-    """
-
-    (kSelectObjectMode,
-     kSelectComponentMode,
-     kSelectRootModem,
-     kSelectLeafMode,
-     kSelectTemplateMode) = range(5)
-
-    def __new__(cls, mask=None):
-        cls = object.__new__(cls, mask)
-        for a in oldapi.MSelectionMask.__dict__:
-            if a.startswith('kSelect'):
-                setattr(cls, a, oldapi.MSelectionMask.__dict__[a])
-        return cls
-
-    def __init__(self, mask=None):
-        self._mask = mask or oldapi.MSelectionMask()
-
-    def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, list(self))
-
-    def __str__(self):
-        return '{}'.format(self.typestr)
-
-    def __iter__(self):
-        return iter(self.get_active_masks(local=True))
-
-    def __contains__(self, value):
-        return self._mask.intersects(value)
-
-    @property
-    def mask(self):
-        return self._mask
-
-    @property
-    def mode(self):
-        return mgl.selectionMode()
-
-    @property
-    def typestr(self):
-        return self.get_active_masks(internal=False, local=True)
-
-    @classmethod
-    def active(cls):
-        """
-        Return active selection mask.
-        """
-        mask = {
-            mgl.kSelectObjectMode: mgl.objectSelectionMask(),
-            mgl.kSelectComponentMode: mgl.componentSelectionMask(),
-        }[mgl.selectionMode()]
-        return cls(mask)
-
-    @staticmethod
-    def set_mode(kmode):
-        """
-        Set selection mode.
-
-        :param kmode: internal selection mode pointer.
-        """
-        mgl.setSelectionMode(kmode)
-
-    def add(self, other):
-        """
-        Add mask(s) to the current :class:`SelectionMask` object.
-        """
-        if type(other) in [list, tuple, set]:
-            for o in other:
-                self._mask.addMask(o)
-        else:
-            self._mask.addMask(other)
-        self.update()
-
-    def set_mask(self, other):
-        """
-        Set active mask to given ``OpenMaya.MSelectionMask`` or
-        internal int pointer.
-        """
-        self._mask.setMask(other)
-        self.update()
-
-    def get_active_masks(self, internal=True, local=False):
-        """
-        Construct and return active mask set.
-
-        :param internal: wether rtype is internal int pointers or
-            string attributes.
-        :param local: wether to look for masks in local ``SelectionMask``
-            object or global ``OpenMaya.MGlobal`` mask.
-        :rtype: ``set``
-        """
-        active = set()
-        for m in self.__dict__:
-            if not m.startswith('kSelect'):
-                continue
-
-            if local:
-                space = self
-            else:
-                space = self.active()
-
-            if self.__dict__[m] in space:
-                if internal:
-                    active.add(self.__dict__[m])
-                else:
-                    active.add(m)
-        return active
-
-    def clear(self):
-        """
-        Empty mask by creating new one and overriding it.
-        """
-        self._mask = oldapi.MSelectionMask()
-        self.update()
-
-    def update(self):
-        """
-        Set to be the active mask in Maya.
-        """
-        if self.mode == mgl.kSelectComponentMode:
-            mgl.setComponentSelectionMask(self._mask)
-        elif self.mode == mgl.kSelectObjectMode:
-            mgl.setObjectSelectionMask(self._mask)
 
 
 class DraggerCtx(object):
@@ -766,7 +639,7 @@ class HistoryList(object):
         Trim everything too old when reaching list limit.
         """
         if len(self.history_list) > self.LIST_LIMIT:
-            del self.history_list[: len(self.history_list) - self.LIST_TRIMMED_SIZE]
+            del self.history_list[:len(self.history_list)-self.LIST_TRIMMED_SIZE]
 
 
 if __name__ == '__main__':
