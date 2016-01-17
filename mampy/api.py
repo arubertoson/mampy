@@ -6,8 +6,8 @@ This module implements the Mampy API.
 
 """
 
-from mampy.utils import OptionVar, SelectionMask
-from mampy.slist import SelectionList
+from mampy.utils import OptionVar
+from mampy.slist import SelectionList, SelectionMask
 from mampy.comp import Component
 from mampy.node import DagNode
 
@@ -120,6 +120,8 @@ def optionVar(*args, **kwargs):
         20
         >>> options['TrackOrderedSelection']
         True
+
+    .. note:: Redundant
     """
     return OptionVar(*args, **kwargs)
 
@@ -143,6 +145,6 @@ def get_active_mask():
         >>> smask.clear()
         >>> smask.set(kSelectSurfaces)
 
-
+    .. note:: Redundant
     """
     return SelectionMask.active()
