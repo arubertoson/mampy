@@ -5,9 +5,11 @@ This module contains the `Component` class and functions for working with
 
 import logging
 import itertools
+import collections
 
 # Maya API import
 import maya.cmds as cmds
+import maya.OpenMaya as om
 import maya.api.OpenMaya as api
 from maya.api.OpenMaya import MFn
 
@@ -16,7 +18,136 @@ from mampy.datatypes import BoundingBox
 
 logger = logging.getLogger(__name__)
 
-__all__ = ['Component', 'MeshVert', 'MeshEdge', 'MeshPolygon', 'MeshMap']
+__all__ = ['Component', 'MeshVert', 'MeshEdge', 'MeshPolygon', 'MeshMap',
+           'get_outer_edges_in_loop', 'get_connected_components_in_comp']
+
+
+# def get_connected_components_on_object(comp):
+#     """
+#     Loop through given indices and check if they are connected. Maps
+#     connected indices and returns a dict.
+
+#     This one utilizes the get_connected in class. It's around 10 times slower
+#     than the function below, so for now... It's redundant.
+
+#     """
+#     def is_index_connected(index):
+#         return any(
+#             c in connected[connected_set_count]
+#             for c in comp.get_connected(index)
+#             )
+
+#     connected_set_count = 0
+#     indices = set(comp.indices)
+#     connected = collections.defaultdict(set)
+#     while indices:
+
+#         connected_set_count += 1
+#         connected[connected_set_count].add(indices.pop())
+#         while True:
+#             is_connected = False
+
+#             for i in indices.copy():
+#                 if is_index_connected(i):
+#                     is_connected = True
+#                     connected[connected_set_count].add(i)
+#                     indices.remove(i)
+#             if not is_connected:
+#                 break
+#     return connected
+
+
+def get_outer_edges_in_loop(connected):
+    """
+    Return outer edges from a component object containing connected
+    edges.
+    """
+    # Get tuples with vert ids representing edges
+    edges = [connected.mesh.getEdgeVertices(i) for i in connected.indices]
+    indices = set(sum(edges, ()))
+
+    # Create a counter and count vert ids
+    vert_count = collections.Counter()
+    vert_count.update(i for e in edges for i in e)
+
+    # Edges are represented as a tuple containing MeshVerts. This is
+    # so in case of vector creation you will get the right direction.
+    outer_edges = []
+    for each in vert_count.most_common()[-2:]:
+
+        outer_vert = each[0]
+        outer_edge = [e for e in edges if outer_vert in e].pop()
+        inner_vert = [v for v in outer_edge if not outer_vert == v].pop()
+        indices.remove(outer_vert)
+
+        outer_edges.append(tuple(
+            MeshVert.create(str(connected.dagpath)).add(i)
+            for i in [outer_vert, inner_vert]
+            ))
+    dag = str(connected.dagpath)
+    return outer_edges, MeshVert.create(dag).add(indices)
+
+
+def get_connected_components_in_comp(comp):
+    """
+    Loop through given indices and check if they are connected. Maps
+    connected indices and returns a dict.
+
+    .. todo: rewrite if / elif segments to something a bit more pleasing to
+            the eyes
+    """
+    def is_ids_in_loop(ids):
+        """
+        Check if id is connected to any indices currently in
+        connected[connected_set_count] key.
+        """
+        id1, id2 = ids
+        for edge in connected[connected_set_count]:
+            if id1 in edge or id2 in edge:
+                return True
+        return False
+
+    # Needs to make sure that edges does not extend outside of the
+    # selection border.
+    if comp.type == api.MFn.kMeshEdgeComponent:
+        edge = comp
+    elif comp.type in [api.MFn.kMeshVertComponent,
+                       api.MFn.kMeshMapComponent]:
+        edge = comp.to_edge(internal=True)
+    else:
+        edge = comp.to_edge()
+
+    # Set up necessary variables
+    connected_set_count = 0
+    connected = collections.defaultdict(set)
+    indices = set([edge.mesh.getEdgeVertices(e) for e in edge.indices])
+    while indices:
+
+        connected_set_count += 1
+        connected[connected_set_count].add(indices.pop())
+
+        # Map connected until no match can be found
+        while True:
+            loop_growing = False
+            for ids in indices.copy():
+                if is_ids_in_loop(ids):
+                    loop_growing = True
+                    connected[connected_set_count].add(ids)
+                    indices.remove(ids)
+            if not loop_growing:
+                break
+
+    # Create list and append connected comps as list object.
+    return_list = []
+    for i in connected.itervalues():
+        return_comp = MeshVert.create(comp.dagpath)
+        return_comp.add(set(sum(i, ())))
+        if comp.type == api.MFn.kMeshEdgeComponent:
+            converted = return_comp.convert_to(comp.type, internal=True)
+        else:
+            converted = return_comp.convert_to(comp.type)
+        return_list.append(converted)
+    return return_list
 
 
 class Component(object):
@@ -84,6 +215,7 @@ class Component(object):
         self._bbox = None
         self._mesh = None
         self._points = None
+        self._normals = None
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, str(self))
@@ -268,6 +400,7 @@ class Component(object):
         else:
             self._indexed.addElement(indices)
         self._slist.add(self.node)
+        return self
 
     def to_face(self, **kwargs):
         """
@@ -342,6 +475,49 @@ class Component(object):
         complete._indexed.setCompleteData(count)
         return self.__class__(self.dagpath, complete.object)
 
+    def get_connected(self, index, comp_type=None):
+        """
+        Construct a int array of connected component indices from given index.
+
+        :rtype: `MIntArray`
+
+        .. note:: Temporary method until api 2.0 get a similar feature.
+            This is slow and there are better alternativs. use as last
+            resort.
+        """
+        # Create dagpath
+        dag_path = om.MDagPath()
+        s = om.MSelectionList()
+        s.add(str(self.dagpath))
+        s.getDagPath(0, dag_path)
+
+        # Create component
+        component_index = om.MFnSingleIndexedComponent()
+        component = component_index.create(self.__mtype__)
+        component_index.addElement(index)
+
+        # Get component
+        s = om.MSelectionList()
+        s.add(dag_path, component)
+        s.getDagPath(0, dag_path, component)
+
+        # Find connected components
+        connected = om.MIntArray()
+        iterator = {
+            MFn.kMeshVertComponent: om.MItMeshVertex,
+            MFn.kMeshEdgeComponent: om.MItMeshEdge,
+            MFn.kMeshPolygonComponent: om.MItMeshPolygon,
+        }[self.__mtype__]
+        to_type = {
+            MFn.kMeshVertComponent: 'getConnectedVertices',
+            MFn.kMeshEdgeComponent: 'getConnectedEdges',
+            MFn.kMeshPolygonComponent: 'getConnectedFaces',
+        }[comp_type or self.__mtype__]
+
+        iterator = iterator(dag_path, component)
+        getattr(iterator, to_type)(connected)
+        return connected
+
     def get_mesh_shell(self):
         """
         Extend current :class:`Component` to contained mesh shell and return
@@ -359,6 +535,35 @@ class Component(object):
             )
         faces.add(shell)
         return faces.convert_to(self.type)
+
+    def get_normal(self, idx, space=api.MSpace.kWorld, angle_weighted=False):
+        """
+        Place list of normals for correct component type and return depening
+        on type.
+        """
+        if self._normals is None:
+            if self.type == MFn.kMeshPolygonComponent:
+                # Bit unsure which is best method for getting face normal
+                # self._normals = self.mesh.getFaceVertexNormals(space)
+                self._normals = self.mesh.getNormals(space)
+            elif (self.type in [
+                    MFn.kMeshVertComponent,
+                    MFn.kMeshEdgeComponent]):
+                self._normals = self.mesh.getVertexNormals(angle_weighted,
+                                                           space)
+        if self.type == MFn.kMeshEdgeComponent:
+            v1, v2 = self.mesh.getEdgeVertices(idx)
+            return (self._normals[v1]+self._normals[v1]) * 0.5
+
+        elif self.type == MFn.kMeshPolygonComponent:
+            face_ids = self.mesh.getFaceNormalIds(idx)
+            average = api.MFloatVector()
+            for i in face_ids:
+                average += self._normals[i]
+            return average / len(face_ids)
+
+        elif self.type == MFn.kMeshVertComponent:
+            return self._normals[idx]
 
     def get_uv_shell(self):
         """
@@ -478,5 +683,10 @@ class MeshMap(Component):
 
 
 if __name__ == '__main__':
-    comp = Component('pCube1.f[4]')
-    print comp.bounding_box
+
+    # s = Component('pSphere1.f[237]')
+    # s = Component('pSphere1.e[237]')
+    s = Component('pSphere1.vtx[215]')
+    for i in s.indices:
+        print s.get_connected(i)
+        # print type(s.get_normals(i))
