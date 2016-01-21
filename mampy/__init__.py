@@ -23,9 +23,16 @@ or to work with a Node::
 
 For more examples see documentation at <http://readthedocs.com>.
 
-:copyright: (c) 2015 Marcus Albertsson.
+:copyright: (c) 2016 Marcus Albertsson.
 :license: MIT, see LICENSE for more details.
 """
+
+__author__ = 'Marcus Albertsson <marcus.arubertoson@gmail.com>'
+__copyright__ = 'Copyright 2016 Marcus Albertsson'
+__url__ = 'http://github.com/arubertoson/maya-mampy'
+__version__ = '0.0.4'
+__license__ = 'MIT'
+
 
 from mampy.utils import *
 from mampy.slist import *
@@ -39,14 +46,6 @@ from mampy.packages import profilehooks
 from mampy.api import (ls, selected, ordered_selection, get_node,
                        get_component, optionVar, get_active_mask)
 
-
-__title__ = 'mampy'
-__version__ = '0.0.2'
-__author__ = 'Marcus Albertsson'
-__email__ = 'marcus.arubertoson@gmail.com'
-__url__ = 'http://github.com/arubertoson/maya-mampy'
-__license__ = 'MIT'
-__copyright__ = 'Copyright 2015 Marcus Albertsson'
 
 # Init
 option_var = OptionVar()
