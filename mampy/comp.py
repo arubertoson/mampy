@@ -88,7 +88,7 @@ def get_outer_edges_in_loop(connected):
     return outer_edges, MeshVert.create(dag).add(indices)
 
 
-def get_connected_components_in_comp(comp):
+def get_connected_components_in_comp(comp, convert_to_origin_type=True):
     """
     Loop through given indices and check if they are connected. Maps
     connected indices and returns a dict.
@@ -106,6 +106,23 @@ def get_connected_components_in_comp(comp):
             if id1 in edge or id2 in edge:
                 return True
         return False
+
+    def get_return_list():
+        """
+        Create return list containing connected components.
+        """
+        # Create list and append connected comps as list object.
+        return_list = []
+        for i in connected.itervalues():
+            return_comp = MeshVert.create(comp.dagpath)
+            return_comp.add(set(sum(i, ())))
+            if comp.type in [api.MFn.kMeshEdgeComponent,
+                             api.MFn.kMeshPolygonComponent]:
+                converted = return_comp.convert_to(comp.type, internal=True)
+            else:
+                converted = return_comp.convert_to(comp.type)
+            return_list.append(converted)
+        return return_list
 
     # Needs to make sure that edges does not extend outside of the
     # selection border.
@@ -137,17 +154,7 @@ def get_connected_components_in_comp(comp):
             if not loop_growing:
                 break
 
-    # Create list and append connected comps as list object.
-    return_list = []
-    for i in connected.itervalues():
-        return_comp = MeshVert.create(comp.dagpath)
-        return_comp.add(set(sum(i, ())))
-        if comp.type == api.MFn.kMeshEdgeComponent:
-            converted = return_comp.convert_to(comp.type, internal=True)
-        else:
-            converted = return_comp.convert_to(comp.type)
-        return_list.append(converted)
-    return return_list
+    return get_return_list()
 
 
 class Component(object):
@@ -237,6 +244,9 @@ class Component(object):
         except RuntimeError:
             return 0
 
+    def __getitem__(self, index):
+        return self.new().add(self.indices[index])
+
     def __iter__(self):
         return iter(self._slist.getSelectionStrings())
 
@@ -320,6 +330,9 @@ class Component(object):
         objects and return it.
 
         :rtype: ``list``
+
+        .. todo:: Make sure that points represent indices position of
+            component object.
         """
         if self._points is None:
             if self.type == MFn.kMeshMapComponent:
@@ -536,21 +549,24 @@ class Component(object):
         faces.add(shell)
         return faces.convert_to(self.type)
 
+    def __mesh_normals(self, space, angle_weighted):
+        if self.type == MFn.kMeshPolygonComponent:
+            # Bit unsure which is best method for getting face normal
+            # self._normals = self.mesh.getFaceVertexNormals(space)
+            self._normals = self.mesh.getNormals(space)
+        elif (self.type in [
+                MFn.kMeshVertComponent,
+                MFn.kMeshEdgeComponent]):
+            self._normals = self.mesh.getVertexNormals(angle_weighted, space)
+
     def get_normal(self, idx, space=api.MSpace.kWorld, angle_weighted=False):
         """
         Place list of normals for correct component type and return depening
         on type.
         """
         if self._normals is None:
-            if self.type == MFn.kMeshPolygonComponent:
-                # Bit unsure which is best method for getting face normal
-                # self._normals = self.mesh.getFaceVertexNormals(space)
-                self._normals = self.mesh.getNormals(space)
-            elif (self.type in [
-                    MFn.kMeshVertComponent,
-                    MFn.kMeshEdgeComponent]):
-                self._normals = self.mesh.getVertexNormals(angle_weighted,
-                                                           space)
+            self.__mesh_normals(space, angle_weighted)
+
         if self.type == MFn.kMeshEdgeComponent:
             v1, v2 = self.mesh.getEdgeVertices(idx)
             return (self._normals[v1]+self._normals[v1]) * 0.5
@@ -564,6 +580,16 @@ class Component(object):
 
         elif self.type == MFn.kMeshVertComponent:
             return self._normals[idx]
+
+    # def get_normals(self, space=api.MSpace.kWorld, angle_weighted=False):
+    #     """
+    #     """
+    #     if self._normals is None:
+    #         self.__mesh_normals(space, angle_weighted)
+    #     normals = []
+    #     for idx in self.indices:
+
+    #     return [self._normals[idx] for idx in self.indices]
 
     def get_uv_shell(self):
         """
