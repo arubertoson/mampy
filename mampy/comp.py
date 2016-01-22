@@ -607,6 +607,21 @@ class Component(object):
     def is_complete(self):
         return self._indexed.isComplete
 
+    def is_border(self, index):
+        """
+        Check if component index is on border of mesh.
+        """
+        if self.type == api.MFn.kMeshPolygonComponent:
+            return self.mesh.onBoundary(self.to_face().index)
+        elif self.type == api.MFn.kEdgeComponent:
+            return cmds.polySelect(q=True, edgeBorder=index) or False
+        else:
+            edge = self.new().add(index).to_edge()
+            return any(
+                [cmds.polySelect(q=True, edgeBorder=i) for i in edge.indices]
+                )
+        return False
+
     def is_face(self):
         """
         Shorthand for ``self.is_valid(MFn.kMeshPolygonComponent)``
@@ -712,7 +727,6 @@ if __name__ == '__main__':
 
     # s = Component('pSphere1.f[237]')
     # s = Component('pSphere1.e[237]')
-    s = Component('pSphere1.vtx[215]')
-    for i in s.indices:
-        print s.get_connected(i)
-        # print type(s.get_normals(i))
+    s = Component('pPlane1.vtx[3]')
+    # s = Component('pPlane1.e[9]')
+    print s.is_border(s.index)
