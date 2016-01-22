@@ -379,6 +379,7 @@ class DraggerCtx(object):
         """
         Called on press.
         """
+        cmds.undoInfo(openChunk=True)
         try:
             button = 0 if self.button == 1 else 1
             dispatch = {
@@ -419,11 +420,10 @@ class DraggerCtx(object):
         """
         Called during drag.
         """
-        cmds.undoInfo(openChunk=True)
         try:
             button = 0 if self.button == 1 else 1
             dispatch = {
-                0: [self.drag_left, self.drag_shift_middle],
+                0: [self.drag_left, self.drag_middle],
                 1: [self.drag_shift_left, self.drag_shift_middle],
                 2: [self.drag_ctrl_left, self.drag_ctrl_middle],
                 3: [self.drag_ctrl_shift_left, self.drag_ctrl_shift_middle],
