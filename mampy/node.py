@@ -24,7 +24,7 @@ import maya.api.OpenMaya as api
 logger = logging.getLogger(__name__)
 
 
-__all__ = ['DagNode', 'Camera', 'Transform']
+__all__ = ['DagNode', 'DependencyNode', 'Camera', 'Transform']
 
 
 def _space(kspace):
@@ -34,14 +34,17 @@ def _space(kspace):
     }[kspace]
 
 
-class Plug(api.MPlug):
+class Plug(object):
     """
     Wrapping API ``api.OpenMaya.MPlug`` for easier functionality.
     """
 
-    def __init__(self, node, *args, **kwargs):
+    def __init__(self, node, plug):
         self.node = node
-        super(Plug, self).__init__(*args, **kwargs)
+        self._mfnplug = plug
+
+    def __str__(self):
+        return str(cmds.getAttr(self.name))
 
     @property
     def name(self):
@@ -49,7 +52,7 @@ class Plug(api.MPlug):
 
     @property
     def plug_name(self):
-        return self.partialName(useLongNames=True)
+        return self._mfnplug.partialName(useLongNames=True)
 
     def get(self, *args, **kwargs):
         return cmds.getAttr(self.name, *args, **kwargs)
@@ -64,7 +67,103 @@ class Plug(api.MPlug):
         cmds.disconnectAttr(self.name, other.name, *args, **kwargs)
 
 
-class DagFactory(type):
+class NodeBase(object):
+
+    def __init__(self):
+        self._attributes = None
+        self._mfndep = None
+        self._fullpath = None
+        # self.__initialised = True
+
+    def __getattr__(self, name):
+        if name in self.attributes:
+            plug = self.get_plug(name)
+            return plug.get()
+
+    def __setattr__(self, name, value):
+        # Needed to be able to set attributes in __init__
+        if '_{}__initialised'.format(self.__class__.__name__) not in self.__dict__:
+            return dict.__setattr__(self, name, value)
+        # to stop recursive when calling property
+        elif name == '_attributes':
+            return super(NodeBase, self).__setattr__(name, value)
+
+        if name in self.attributes:
+            self.get_plug(name).set(value)
+        else:
+            super(NodeBase, self).__setattr__(name, value)
+
+    __getitem__ = __getattr__
+    __setitem__ = __setattr__
+
+    def get_plug(self, name):
+        """
+        Construct and return Plug object.
+
+        :rtype: :class:`Plug`
+        """
+        try:
+            return Plug(self, self._mfndep.findPlug(name, False))
+        except RuntimeError:
+            raise AttributeError('{} object has no attribute "{}"'.format(
+                                 self.__class__.__name__, name))
+
+    @property
+    def attributes(self):
+        """
+        Construct and return attribute list that belongs to node.
+
+        :rtype: ``set``
+        """
+        if self._attributes is None:
+            attributes = set(cmds.listAttr(self.fullpath, shortNames=True))
+            attributes.update(set(cmds.listAttr(self.fullpath)))
+            self._attributes = attributes
+        return self._attributes
+
+
+class DependencyNode(NodeBase):
+    """
+    A base dependency node class.
+
+    Dependency nodes in maya contains a node and all its conenctions and
+    attributes.
+
+    .. todo:: Expand
+    """
+
+    def __init__(self, dagpath):
+        super(DependencyNode, self).__init__()
+
+        self.dagpath = dagpath
+        tmp = api.MSelectionList(); tmp.add(dagpath)
+        self._mfndep = api.MFnDependencyNode(tmp.getDependNode(0))
+
+        # Finished init
+        self.__initialised = True
+
+    @property
+    def fullpath(self):
+        return self._mfndep.name()
+
+    def connect(self, attribute, other):
+        if isinstance(other, Plug):
+            self.get_plug(attribute).connect(other)
+        else:
+            self.get_plug(attribute).connect(self.get_plug(attribute))
+
+    def disconnect(self, attribute, other):
+        if isinstance(other, Plug):
+            self.get_plug(attribute).disconnect(other)
+        else:
+            self.get_plug(attribute).disconnect(self.get_plug(attribute))
+
+    @property
+    def plugs(self):
+        return self._mfndep.getConnections()
+
+
+class DagNodeFactory(type):
     """Constructs a DagNode from a dagpath or dagpath object.
 
     Returns the DagNode subclass that represents the node type of given
@@ -92,7 +191,7 @@ class DagFactory(type):
         return type.__call__(cls, dagpath)
 
 
-class DagNode(object):
+class DagNode(NodeBase):
     """
     A base dagnode class, providing most behaviour that Maya Nodes can
     inherit and override, as necessary.
@@ -110,13 +209,17 @@ class DagNode(object):
         :class:`DagNode` does currently lack subclasses. This will be
         developed as need arises.
     """
-    __metaclass__ = DagFactory
+    __metaclass__ = DagNodeFactory
 
     def __init__(self, dagpath):
+        super(DagNode, self).__init__()
         self._dagpath = dagpath
         self._dagnode = api.MFnDagNode(dagpath)
-        self._mfndep = api.MFnDependencyNode(dagpath.node())
-        self._attr = None
+        self._mfndep = api.MFnDependencyNode(self.node)
+        self._dependency = DependencyNode(dagpath)
+
+        # Finished init
+        self.__initialised = True
 
     def __repr__(self):
         return '{}({!r})'.format(self.__class__.__name__, str(self))
@@ -142,25 +245,6 @@ class DagNode(object):
         """
         return self.hasChild(mobject)
 
-    def __getattr__(self, name):
-        if name in self.attributes:
-            p = Plug(self, self._mfndep.findPlug(name, False))
-            setattr(self, name, p)
-            return p
-
-    @property
-    def attributes(self):
-        """
-        Construct and return attribute list that belongs to node.
-
-        :rtype: ``list``
-        """
-        if self._attr is None:
-            attributes = set(cmds.listAttr(self.fullpath, shortNames=True))
-            attributes.update(set(cmds.listAttr(self.fullpath)))
-            self._attr = attributes
-        return self._attr
-
     @property
     def bounding_box(self):
         """
@@ -181,6 +265,10 @@ class DagNode(object):
         :rtype: ``api.OpenMaya.MObject``
         """
         return self._dagpath.node()
+
+    @property
+    def dependency(self):
+        return self._dependency
 
     @property
     def fullpath(self):
@@ -377,24 +465,6 @@ class Transform(DagNode):
 
 
 if __name__ == '__main__':
-    p = set([DagNode('pCube5'), DagNode('pCube3')])
-    c = set([DagNode('pCube5'), DagNode('pCube3')])
-
-
-    print p == c
-    # trns = p.get_transform()
-    # trns.set_pivot(api.MVector(0, 0, 0))
-
-
-    # cm = c._dagnode.transformationMatrix()
-    # pm = p._dagnode.transformationMatrix()
-
-    # m = cm - pm
-    # print type(m)
-    # c._dagnode.addChild(p.node)
-    # # p.translate.set(0, 0, 0)
-
-    # trans = p.get_transform()
-    # m = api.MTransformationMatrix(m)
-    # t = m.translation(api.MSpace.kWorld)
-    # trans._mfntrans.setTranslation(t, api.MSpace.kWorld)
+    p = DependencyNode('polyBevel5')
+    print p['fraction']
+    p.segments = 2
