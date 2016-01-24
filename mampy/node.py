@@ -55,10 +55,17 @@ class Plug(object):
         return self._mfnplug.partialName(useLongNames=True)
 
     def get(self, *args, **kwargs):
-        return cmds.getAttr(self.name, *args, **kwargs)
+        result = cmds.getAttr(self.name, *args, **kwargs)
+        if isinstance(result, (tuple, list)):
+            return result[0]
+        else:
+            return result
 
     def set(self, value, *args, **kwargs):
-        cmds.setAttr(self.name, value, *args, **kwargs)
+        if hasattr(value, '__iter__') and not isinstance(value, basestring):
+            cmds.setAttr(self.name, *list(value), **kwargs)
+        else:
+            cmds.setAttr(self.name, value, *args, **kwargs)
 
     def connect(self, other, *args, **kwargs):
         cmds.connectAttr(self.name, other.name, *args, **kwargs)
@@ -465,6 +472,17 @@ class Transform(DagNode):
 
 
 if __name__ == '__main__':
-    p = DependencyNode('polyBevel5')
-    print p['fraction']
-    p.segments = 2
+    p = DagNode('pPlane2')
+    t = api.MVector(2, 2, 2)
+    for i in t:
+        print i
+    print dir(t)
+    # print len(t)
+    # print hasattr(t, 'len')
+    # p['scale'] = t
+    # print type(p['rotate'][0])
+    # print hasattr(api.MVector(2, 2, 2), '__len__')
+    # print p['scaleX']
+    # p['scale'] = (2, )
+    # print p['fraction']
+    # p.segments = 2
