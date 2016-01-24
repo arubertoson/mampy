@@ -338,9 +338,10 @@ class Component(object):
             if self.type == MFn.kMeshMapComponent:
                 self._points = zip(*self.mesh.getUVs())
                 if not self._indexed.isComplete:
-                    self._points = [api.MPoint(self._points[idx])
-                                    for idx in self.indices]
-                    return self._points
+                    self._points = [
+                        api.MPoint(self._points[idx])
+                        for idx in self.indices
+                        ]
             else:
                 self._points = self.mesh.getPoints(self.space)
                 if not self.__mtype__ == MFn.kMeshVertComponent:
@@ -353,8 +354,8 @@ class Component(object):
                 else:
                     indices = self.indices
 
-            if not self._indexed.isComplete:
-                    self._points = [self._points[idx] for idx in indices]
+                if not self._indexed.isComplete:
+                        self._points = [self._points[idx] for idx in indices]
         return self._points
 
     @property
@@ -408,9 +409,9 @@ class Component(object):
 
         :param indices: ``int``, ``sequence``
         """
-        if hasattr(indices, '__len__'):
+        try:
             self._indexed.addElements(indices)
-        else:
+        except TypeError:
             self._indexed.addElement(indices)
         self._slist.add(self.node)
         return self
@@ -605,7 +606,12 @@ class Component(object):
         return uvs
 
     def is_complete(self):
-        return self._indexed.isComplete
+        return {
+            MFn.kMeshPolygonComponent: self.mesh.numPolygons,
+            MFn.kMeshEdgeComponent: self.mesh.numEdges,
+            MFn.kMeshVertComponent: self.mesh.numVertices,
+            MFn.kMeshMapComponent: self.mesh.numUVs(),
+        }[self.type] == len(self.indices)
 
     def is_border(self, index):
         """
@@ -724,9 +730,15 @@ class MeshMap(Component):
 
 
 if __name__ == '__main__':
-
+    print('hello')
     # s = Component('pSphere1.f[237]')
     # s = Component('pSphere1.e[237]')
-    s = Component('pPlane1.vtx[3]')
+    # s = Component('pCube2.f[0:5]')
+    # s = Component('pCube1_dup1_ext.f[0:3]')
+    # print s.is_complete()
+    # print len(s.indices) == s._indexed.getCompleteData()
+    # print s._indexed.getCompleteData()
+    # print len(s.indices)
+    # print s.is_complete()
     # s = Component('pPlane1.e[9]')
-    print s.is_border(s.index)
+    # print s.is_border(s.index)
