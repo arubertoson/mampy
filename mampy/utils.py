@@ -29,6 +29,20 @@ logger = logging.getLogger(__name__)
 EPS = sys.float_info.epsilon
 
 
+def script_job_exists(jobnum, event):
+    """
+    This is too general of a function, should probablyh be moved to mampy.
+
+    .. todo:: move to mampy
+    """
+    if not cmds.scriptJob(exists=jobnum):
+        return False
+    for i in cmds.scriptJob(lj=True):
+        if i.startswith(str(jobnum)) and str(event) in i:
+            return True
+    return False
+
+
 def get_outliner_index(dagnode):
     """
     Return the current index of the given node in the outliner.
