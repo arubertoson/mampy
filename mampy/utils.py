@@ -16,10 +16,11 @@ import maya.api.OpenMaya as api
 
 from PySide import QtGui
 import mampy
-from mampy.packages.mvp import Viewport
+from mampy.packages import profilehooks, mvp, pathlib2, contextlib2
+from mampy.packages.pathlib2 import Path
 from mampy.packages.contextlib2 import ContextDecorator
 
-__all__ = ['get_outliner_index', 'history_chunk', 'select_keep',
+__all__ = ['get_outliner_index', 'undoable', 'repeatable', 'select_keep',
            'get_object_under_cursor',  # 'object_selection_mode'
            'get_objects_in_view', 'OptionVar', 'DraggerCtx', 'MelGlobals',
            'HistoryList']
@@ -55,20 +56,41 @@ def get_outliner_index(dagnode):
         return outliner.index(dagnode.name) - outliner.index(parent.name)
 
 
-class history_chunk(ContextDecorator):
-    """
-    History chunk decorator.
-
-    Wraps function inside a history chunk enabling undo chunks to be
-    created on python functions.
-    """
-    def __enter__(self):
+def undoable(func):
+    """Decorator for making python functions undoable"""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
         cmds.undoInfo(openChunk=True)
+        try:
+            return func(*args, **kwargs)
+        finally:
+            cmds.undoInfo(closeChunk=True)
+    return wrapper
 
-    def __exit__(self, type, value, traceback):
-        cmds.undoInfo(closeChunk=True)
-        if traceback:
-            cmds.undo()
+
+def repeatable(func):
+    """Decorator for making python functions repeatable."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        parameters = ''
+        if args:
+            parameters = ', '.join([str(i) for i in args])
+        if kwargs:
+            kwargs_parameters = [
+                '='.join([str(key), str(value)])
+                for key, value in kwargs.iteritems()
+                ]
+            parameters += ', '.join(kwargs_parameters)
+
+        cmds.evalDeferred('import {}'.format(func.__module__))
+        command = 'python("{}.{}({})")'.format(func.__module__, func.__name__, parameters)
+        result = func(*args, **kwargs)
+        try:
+            cmds.repeatLast(ac=command, acl=func.__name__)
+        except RuntimeError:
+            pass
+        return result
+    return wrapper
 
 
 class select_keep(ContextDecorator):
@@ -124,8 +146,8 @@ class object_mode(ContextDecorator):
     def __enter__(self):
         self.object_mode = cmds.selectMode(q=True, object=True)
         if not self.object_mode:
-            cmds.selectMode(object=True)
             self.compk = get_active_flags_in_mask(object=False)
+            cmds.selectMode(object=True)
 
         self.objk = get_active_flags_in_mask(object=True)
         # make sure all objects can be selected.
@@ -133,12 +155,12 @@ class object_mode(ContextDecorator):
 
     def __exit__(self, *args):
         # Restore object selection mask.
-        cmds.selectType(**self.objk)
+        cmds.selectType(**{k: True for k in self.objk})
 
         # restore mode
         if not self.object_mode:
             cmds.selectMode(component=True)
-            cmds.selectType(**self.compk)
+            cmds.selectType(**{k: True for k in self.compk})
 
 
 @select_keep()
@@ -153,10 +175,10 @@ def get_object_under_cursor():
     with object_mode():
         oldapi.MGlobal.selectFromScreen(
             cursor_pos.x(),
-            view.widget.height()-cursor_pos.y(),  # Maya counts from below
+            view.widget.height() - cursor_pos.y(),  # Maya counts from below
             oldapi.MGlobal.kReplaceList,
             oldapi.MGlobal.kSurfaceSelectMethod
-            )
+        )
         objects = oldapi.MSelectionList()
         oldapi.MGlobal.getActiveSelectionList(objects)
 
@@ -584,6 +606,10 @@ class HistoryList(object):
     def __len__(self):
         return len(self.history_list)
 
+    @property
+    def current_element(self):
+        return list(self.history_list[self.current_item])
+
     def push_selection(self, elements):
         """
         Push the current selection into this history.
@@ -617,7 +643,7 @@ class HistoryList(object):
             return None
 
         self.current_item -= 1
-        return list(self.history_list[self.current_item])
+        # return list(self.history_list[self.current_item])
 
     def jump_forward(self, active_elmenets):
         """
@@ -631,7 +657,7 @@ class HistoryList(object):
             return None
 
         self.current_item += 1
-        return list(self.history_list[self.current_item])
+        # return list(self.history_list[self.current_item])
 
     def remove_element(self, element):
         i = 0
