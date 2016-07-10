@@ -1,0 +1,3 @@
+[submodule "mampy/packages/mvp"]
+	path = mampy/packages/mvp
+	url = https://github.com/danbradham/mvp
