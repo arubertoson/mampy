@@ -6,7 +6,7 @@ This module implements the Mampy API.
 
 """
 
-from mampy.utils import OptionVar
+from mampy.utils import OptionVar, MelGlobals
 from mampy.slist import SelectionList, SelectionMask
 from mampy.comp import Component
 from mampy.node import DagNode
@@ -124,6 +124,10 @@ def optionVar(*args, **kwargs):
     .. note:: Redundant
     """
     return OptionVar(*args, **kwargs)
+
+
+def mel_globals(*args, **kwargs):
+    return MelGlobals(*args, **kwargs)
 
 
 def get_active_mask():
