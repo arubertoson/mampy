@@ -34,19 +34,17 @@ __version__ = '0.0.4'
 __license__ = 'MIT'
 
 
-from mampy.utils import *
-from mampy.slist import *
-from mampy.node import *
-from mampy.comp import *
-from mampy.datatypes import *
-from mampy.exceptions import *
-from mampy.packages.mvp import Viewport, RenderGlobals
-from mampy.packages.pathlib import Path
-from mampy.packages import profilehooks
+# from mampy.utils import *
+# from mampy.slist import *
+# from mampy.node import *
+# from mampy.comp import *
+# from mampy.datatypes import *
+# from mampy.exceptions import *
 from mampy.api import (ls, selected, ordered_selection, get_node,
                        get_component, optionVar, get_active_mask)
 
 
+
 # Init
-option_var = OptionVar()
-mel_globals = MelGlobals()
+# option_var = OptionVar()
+# mel_globals = MelGlobals()
