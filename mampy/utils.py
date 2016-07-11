@@ -4,6 +4,7 @@ script development. These can also be useful for external purposes.
 """
 import sys
 import logging
+import itertools
 import textwrap
 import functools
 import collections
@@ -15,10 +16,12 @@ import maya.OpenMaya as oldapi
 import maya.api.OpenMaya as api
 
 from PySide import QtGui
+
 import mampy
 from mampy.packages import profilehooks, mvp, pathlib2, contextlib2
 from mampy.packages.pathlib2 import Path
 from mampy.packages.contextlib2 import ContextDecorator
+
 
 __all__ = ['get_outliner_index', 'undoable', 'repeatable', 'select_keep',
            'get_object_under_cursor',  # 'object_selection_mode'
@@ -28,6 +31,11 @@ __all__ = ['get_outliner_index', 'undoable', 'repeatable', 'select_keep',
 
 logger = logging.getLogger(__name__)
 EPS = sys.float_info.epsilon
+
+
+def grouped(iterable, n):
+    "s -> (s0,s1,s2,...sn-1), (sn,sn+1,sn+2,...s2n-1), (s2n,s2n+1,s2n+2,...s3n-1), ..."
+    return itertools.izip(*[iter(iterable)] * n)
 
 
 def script_job_exists(jobnum, event):
@@ -79,7 +87,7 @@ def repeatable(func):
             kwargs_parameters = [
                 '='.join([str(key), str(value)])
                 for key, value in kwargs.iteritems()
-                ]
+            ]
             parameters += ', '.join(kwargs_parameters)
 
         cmds.evalDeferred('import {}'.format(func.__module__))
@@ -168,7 +176,7 @@ def get_object_under_cursor():
     """
     Return selectable object under cursor.
     """
-    view = Viewport.active()
+    view = mvp.Viewport.active()
     cursor_pos = view.widget.mapFromGlobal(QtGui.QCursor.pos())
 
     # Get screen object
@@ -196,7 +204,7 @@ def get_objects_in_view(objects=True):
     """
     Return selectable objects on screen.
     """
-    view = Viewport.active()
+    view = mvp.Viewport.active()
     with object_mode():
         oldapi.MGlobal.selectFromScreen(
             0,
@@ -204,7 +212,7 @@ def get_objects_in_view(objects=True):
             view.widget.width(),
             view.widget.height(),
             oldapi.MGlobal.kReplaceList
-            )
+        )
         objects = oldapi.MSelectionList()
         oldapi.MGlobal.getActiveSelectionList(objects)
 
@@ -679,7 +687,7 @@ class HistoryList(object):
         Trim everything too old when reaching list limit.
         """
         if len(self.history_list) > self.LIST_LIMIT:
-            del self.history_list[:len(self.history_list)-self.LIST_TRIMMED_SIZE]
+            del self.history_list[:len(self.history_list) - self.LIST_TRIMMED_SIZE]
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 """
 """
 import sys
+import math
 import maya.api.OpenMaya as api
 
 
@@ -133,3 +134,72 @@ class Line3D(object):
 
     def shortest_line_to_other(self, other):
         return get_line_line_intersection(self, other)
+
+
+class Line2D(object):
+    """
+    Line2D class is the line between two points.
+    """
+
+    def __init__(self, pointA, pointB):
+
+        self.pointA, self.pointB = pointA, pointB
+
+        self.vA = self.vectorA = api.MVector(pointA)
+        self.vB = self.vectorB = api.MVector(pointB)
+
+        self._angle = None
+        self._center = None
+
+    def __repr__(self):
+        return 'Line({pointA!r}, {pointB!r}'.format(**self.__dict__)
+
+    def __str__(self):
+        return '{pointA}, {pointB}'.format(**self.__dict__)
+
+    def __iter__(self):
+        return iter(self.pointA, self.pointB)
+
+    @property
+    def angle(self):
+        if self._angle is None:
+            self._angle = get_angle(self.vA, self.vB)
+        return self._angle
+
+    @property
+    def center(self):
+        if self._center is None:
+            x, y, z = (self.vA + self.vB) / 2
+            self._center = Point2D(x, y)
+        return self._center
+
+
+def get_angle(pointA, pointB):
+    """
+    Calculates the angle between two points.
+    """
+
+    if pointA.x >= pointB.x:
+        distX = (pointA.x - pointB.x)
+        distY = (pointA.y - pointB.y)
+    else:
+        distX = (pointB.x - pointA.x)
+        distY = (pointB.y - pointA.y)
+
+    angle = math.degrees(math.atan2(distY, distX))
+    if angle == 0.0000 or angle == 90.0000 or angle == -90.0000:
+        angle = 0
+
+    elif angle >= -44.9999 and angle <= 44.9999:
+        angle *= -1
+
+    elif angle >= 45.0001 and angle <= 89.9999:
+        angle = 90 - angle
+
+    elif angle <= -45.0001 and angle >= -89.9999:
+        angle = (90 + angle) * -1
+
+    else:
+        angle = 45
+
+    return angle

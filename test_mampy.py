@@ -138,6 +138,5 @@ import mampy
 #     cmds.select(list(cl))
 
 
-print('hello')
 if __name__ == '__main__':
-    print('hello')
+    pass
