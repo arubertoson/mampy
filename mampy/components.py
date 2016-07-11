@@ -2,7 +2,6 @@
 This module contains the `Component` class and functions for working with
 ``Component`` objects.
 """
-
 import logging
 import itertools
 import collections
@@ -14,47 +13,50 @@ import maya.api.OpenMaya as api
 from maya.api.OpenMaya import MFn
 
 from mampy.datatypes import BoundingBox
+from mampy.selections import SelectionList
 
 
 logger = logging.getLogger(__name__)
 
 __all__ = ['Component', 'MeshVert', 'MeshEdge', 'MeshPolygon', 'MeshMap',
-           'get_outer_edges_in_loop', 'get_connected_components_in_comp']
+           'get_outer_edges_in_loop', 'get_connected_components']
 
 
-# def get_connected_components_on_object(comp):
-#     """
-#     Loop through given indices and check if they are connected. Maps
-#     connected indices and returns a dict.
+def get_border_loop_from_edge_index(index):
+    return set(sorted([int(i) for i in cmds.polySelect(q=True, edgeBorder=index)]))
 
-#     This one utilizes the get_connected in class. It's around 10 times slower
-#     than the function below, so for now... It's redundant.
 
-#     """
-#     def is_index_connected(index):
-#         return any(
-#             c in connected[connected_set_count]
-#             for c in comp.get_connected(index)
-#             )
+def get_border_loop_from_edge(component):
+    return set([
+        tuple(border for border in get_border_loop_from_edge_index(idx))
+        for idx in component.indices
+    ])
 
-#     connected_set_count = 0
-#     indices = set(comp.indices)
-#     connected = collections.defaultdict(set)
-#     while indices:
 
-#         connected_set_count += 1
-#         connected[connected_set_count].add(indices.pop())
-#         while True:
-#             is_connected = False
+def get_indices_sharing_edge_border(component):
+    """Get indices sharing border edge loop from component."""
+    edge_borders = SelectionList()
+    for border in get_border_loop_from_edge(component):
+        new_component = component.new()
+        for index in component.indices:
+            if index in border:
+                new_component.add(index)
+        edge_borders.append(new_component)
+    return edge_borders
 
-#             for i in indices.copy():
-#                 if is_index_connected(i):
-#                     is_connected = True
-#                     connected[connected_set_count].add(i)
-#                     indices.remove(i)
-#             if not is_connected:
-#                 break
-#     return connected
+
+def get_border_edges_from_selection(edge_selection):
+    """Get border edges from selection and return a new selection list."""
+    border_edges = SelectionList()
+    for component in edge_selection.itercomps():
+        borders = component.new()
+        for index in component.indices:
+            if not component.is_border(index):
+                continue
+            borders.add(index)
+        if borders:
+            border_edges.append(borders)
+    return border_edges
 
 
 def get_outer_edges_in_loop(connected):
@@ -88,7 +90,7 @@ def get_outer_edges_in_loop(connected):
     return outer_edges, MeshVert.create(dag).add(indices)
 
 
-def get_connected_components_in_comp(comp, convert_to_origin_type=True):
+def get_connected_components(comp, convert_to_origin_type=True):
     """
     Loop through given indices and check if they are connected. Maps
     connected indices and returns a dict.
@@ -263,7 +265,7 @@ class Component(object):
         return hash(self._indexed)
 
     def __contains__(self, other):
-        return self._slist.hasItemPartly(other.node)
+        return self._slist.hasItemPartly(*other.node)
 
     @property
     def bounding_box(self):
@@ -730,15 +732,4 @@ class MeshMap(Component):
 
 
 if __name__ == '__main__':
-    print('hello')
-    # s = Component('pSphere1.f[237]')
-    # s = Component('pSphere1.e[237]')
-    # s = Component('pCube2.f[0:5]')
-    # s = Component('pCube1_dup1_ext.f[0:3]')
-    # print s.is_complete()
-    # print len(s.indices) == s._indexed.getCompleteData()
-    # print s._indexed.getCompleteData()
-    # print len(s.indices)
-    # print s.is_complete()
-    # s = Component('pPlane1.e[9]')
-    # print s.is_border(s.index)
+    pass
