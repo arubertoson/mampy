@@ -30,15 +30,8 @@ For more examples see documentation at <http://readthedocs.com>.
 __author__ = 'Marcus Albertsson <marcus.arubertoson@gmail.com>'
 __copyright__ = 'Copyright 2016 Marcus Albertsson'
 __url__ = 'http://github.com/arubertoson/maya-mampy'
-__version__ = '0.0.4'
+__version__ = '0.1.0'
 __license__ = 'MIT'
 
 
-from mampy.api import (ls,
-                       selected,
-                       ordered_selection,
-                       get_node,
-                       get_component,
-                       optionVar,
-                       get_active_mask
-                       )
+from mampy.api import *
