@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"op",
+				"optionVar"
+			],
+			[
+				"get_",
+				"get_component"
+			],
+			[
+				"order",
+				"ordered_selection"
+			],
+			[
 				"kwar",
 				"kwargs_parameters	statement"
 			],
@@ -106,10 +118,6 @@
 			[
 				"Key_Exc",
 				"Key_Exclam	instance"
-			],
-			[
-				"get_",
-				"get_modifier_keycode	function"
 			],
 			[
 				"Key_b",
@@ -273,9 +281,6 @@
 			]
 		]
 	},
-	"buffers":
-	[
-	],
 	"build_system": "",
 	"build_system_choices":
 	[
@@ -284,9 +289,33 @@
 	"command_palette":
 	{
 		"height": 467.0,
-		"last_filter": "",
+		"last_filter": "mer",
 		"selected_items":
 		[
+			[
+				"mer",
+				"Git: Merge"
+			],
+			[
+				"check",
+				"Git: Checkout"
+			],
+			[
+				"sta",
+				"Git: Status"
+			],
+			[
+				":w",
+				":w - Save"
+			],
+			[
+				"status",
+				"Git: Status"
+			],
+			[
+				"rename",
+				"ANF: Rename File"
+			],
 			[
 				"mark",
 				"Markdown Preview: Preview in Browser"
@@ -306,10 +335,6 @@
 			[
 				":json",
 				"Set Syntax: JSON"
-			],
-			[
-				"status",
-				"Git: Status"
 			],
 			[
 				":git st",
@@ -350,10 +375,6 @@
 			[
 				"edit",
 				"Project: Edit"
-			],
-			[
-				":w",
-				":w - Save"
 			],
 			[
 				":tes",
@@ -536,18 +557,37 @@
 		"side_bar_visible": false,
 		"status_bar_visible": false
 	},
-	"expanded_folders":
-	[
-		"/G/dev/maya/maya-mampy"
-	],
 	"file_history":
 	[
-		"/G/dev/maya/maya-mampy/mampy/slist.py",
-		"/G/dev/maya/maya-mampy/mampy/api.py",
-		"/G/dev/maya/maya-mampy/mampy/exceptions.py",
-		"/G/dev/maya/maya-mampy/mampy/datatypes.py",
-		"/G/dev/maya/maya-mampy/mampy/utils.py",
+		"/G/dev/maya/maya-launcher/mayalauncher.py",
+		"/G/dev/maya/__mrv/python/mrv/maya/__init__.py",
+		"/G/Macke/Dropbox/dev/maya/myaru/qhelpers/aqtwidgets.py",
+		"/G/Macke/Dropbox/dev/maya/myaru/qhelpers/aqtmodels.py",
 		"/G/dev/maya/maya-mampy/mampy/__init__.py",
+		"/G/dev/maya/maya-mampy/mampy/nodes.py",
+		"/G/dev/maya/maya-mampy/mampy/datatypes.py",
+		"/G/dev/maya/maya-mampy/mampy/selections.py",
+		"/G/dev/maya/maya-mampy/mampy/api.py",
+		"/G/dev/maya/maya-mampy/mampy/utils.py",
+		"/G/dev/maya/maya-mampy/mampy/components.py",
+		"/G/dev/maya/__mrv/python/mrv/__init__.py",
+		"/G/dev/maya/__mrv/python/mrv/maya/all.py",
+		"/G/dev/maya/__mrv/python/mrv/maya/env.py",
+		"/G/dev/maya/maya-quickrenamer/quickrenamer/__init__.py",
+		"/G/dev/maya/maya-quickrenamer/quickrenamer/renamer.py",
+		"/G/Macke/Dropbox/apps/cmder/config/aliases",
+		"/G/Macke/Dropbox/apps/cmder/vendor/git-for-windows/mingw32/etc/gitconfig",
+		"/C/Users/Macke/.gitconfig",
+		"/C/Users/Macke/.vimrc",
+		"/G/Macke/Dropbox/apps/cmder/config/settings",
+		"/G/Macke/Dropbox/apps/cmder/vendor/aliases.example",
+		"/G/dev/maya/maya-mampy/mampy/selectionlist.py",
+		"/G/dev/maya/maya-mampy/mampy/slist.py",
+		"/G/dev/maya/maya-mampy/test_mampy.py",
+		"/G/dev/maya/maya-mampy/mampy/comp.py",
+		"/G/dev/maya/maya-mampy/mampy/nodes",
+		"/G/dev/maya/maya-mampy/mampy/node.py",
+		"/G/dev/maya/maya-mampy/mampy/exceptions.py",
 		"/G/dev/maya/maya-mampy/.gitmodules",
 		"/G/dev/maya/maya-mampy/.git/config",
 		"/G/dev/maya/maya-mampy/mampy/packages/mvp.py",
@@ -555,14 +595,12 @@
 		"/G/dev/maya/maya-mampy/mampy/packages/profilehooks.py",
 		"/G/dev/maya/maya-mampy/mampy/packages/pathlib2",
 		"/G/dev/maya/maya-mampy/mampy/packages/__init__.py",
-		"/G/dev/maya/maya-launcher/mayalauncher.py",
 		"/G/dev/maya/userSetup.py",
 		"/G/Macke/Dropbox/appsettings/sublime/Packages/SublimeToMaya/socket_wrap.py",
 		"/G/Macke/Dropbox/appsettings/sublime/Packages/SublimeToMaya/sublimetomaya.py",
 		"/G/dev/maya/maya-mampy/maya-mampy.sublime-project",
 		"/C/Program Files/Autodesk/Maya2015/Python/Lib/site-packages/maya/app/general/CommandPort.py",
 		"/C/Users/Macke/AppData/Roaming/mayalauncher/.config",
-		"/G/dev/maya/maya-mampy/test_mampy.py",
 		"/G/dev/maya/maya-mamtools/mamtools/__init__.py",
 		"/G/dev/maya/maya-mamtools/mamtools/select.py",
 		"/G/dev/maya/maya-mamtools/mamtools/api.py",
@@ -654,6 +692,10 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"comp",
+			";",
+			"\\;%",
+			"cmds",
 			"Logger = logging.getLogger(__name__)\nlogger.setLevel(logging.DEBUG)\n\n\ntest_ma_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),\n                            'test_mampy.ma')\n\n\nclass TestSelectionList(unittest.TestCase):\n\n    def setUp(self):\n",
 			"repeatable",
 			"wrap",
@@ -777,11 +819,7 @@
 			"LeftButton",
 			"pass",
 			"keycode",
-			"sequence",
-			"none",
-			"texture",
-			"model",
-			"object_mode"
+			"sequence"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -797,22 +835,9 @@
 		"whole_word": false,
 		"wrap": true
 	},
-	"groups":
-	[
-		{
-			"sheets":
-			[
-			]
-		},
-		{
-			"sheets":
-			[
-			]
-		}
-	],
 	"incremental_find":
 	{
-		"height": 235.0
+		"height": 39.0
 	},
 	"input":
 	{
@@ -827,18 +852,11 @@
 				0,
 				1,
 				1
-			],
-			[
-				1,
-				0,
-				2,
-				1
 			]
 		],
 		"cols":
 		[
 			0.0,
-			0.5,
 			1.0
 		],
 		"rows":
@@ -856,12 +874,19 @@
 	{
 		"height": 0.0
 	},
+	"output.git-checkout":
+	{
+		"height": 116.0
+	},
 	"output.git-commit":
 	{
 		"height": 116.0
 	},
+	"output.git-merge":
+	{
+		"height": 116.0
+	},
 	"pinned_build_system": "Maya Build",
-	"project": "maya-mampy.sublime-project",
 	"replace":
 	{
 		"height": 466.0
@@ -874,16 +899,32 @@
 		"selected_items":
 		[
 			[
-				"slist",
-				"mampy\\slist.py"
+				"sele",
+				"mampy\\selections.py"
 			],
 			[
 				"util",
 				"mampy\\utils.py"
 			],
 			[
+				"__",
+				"mampy\\__init__.py"
+			],
+			[
+				"",
+				"test_mampy.py"
+			],
+			[
 				"comp",
 				"mampy\\comp.py"
+			],
+			[
+				"node",
+				"mampy\\node.py"
+			],
+			[
+				"slist",
+				"mampy\\slist.py"
 			],
 			[
 				"s",
@@ -962,14 +1003,6 @@
 				"mamqkeys\\.quickkeys"
 			],
 			[
-				"",
-				"mamqkeys\\quickkeys.py"
-			],
-			[
-				"__",
-				"__init__.py"
-			],
-			[
 				"qui",
 				"quickkeys.py"
 			],
@@ -1003,16 +1036,16 @@
 	"select_project":
 	{
 		"height": 750.0,
-		"last_filter": "mamtoo",
+		"last_filter": "",
 		"selected_items":
 		[
 			[
-				"mamtoo",
-				"G:\\dev\\maya\\maya-mamtools\\maya-mamtools.sublime-project"
-			],
-			[
 				"",
 				"G:\\dev\\maya\\maya-mamqtkeys\\maya-mamqtkeys.sublime-project"
+			],
+			[
+				"mamtoo",
+				"G:\\dev\\maya\\maya-mamtools\\maya-mamtools.sublime-project"
 			]
 		],
 		"width": 570.0
@@ -1082,7 +1115,6 @@
 		],
 		"width": 450.0
 	},
-	"selected_group": 0,
 	"settings":
 	{
 	},

@@ -154,3 +154,5 @@ def get_active_mask():
     .. note:: Redundant
     """
     return SelectionMask.active()
+
+
