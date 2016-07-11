@@ -7,9 +7,9 @@ This module implements the Mampy API.
 """
 
 from mampy.utils import OptionVar, MelGlobals
-from mampy.slist import SelectionList, SelectionMask
-from mampy.comp import Component
-from mampy.node import DagNode
+from mampy.selections import SelectionList, SelectionMask
+from mampy.components import Component
+from mampy.nodes import DagNode
 
 
 def selected():
