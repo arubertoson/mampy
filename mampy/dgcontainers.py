@@ -12,8 +12,8 @@ from maya.OpenMaya import MGlobal as mgl
 from maya.api import OpenMaya as api
 
 
-from mampy.components import Component
-from mampy.nodes import DagNode
+from mampy.dgcomps import Component
+from mampy.dgnodes import DagNode
 
 logger = logging.getLogger(__name__)
 

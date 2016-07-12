@@ -5,10 +5,9 @@ This module implements the Mampy API.
 :license: MIT, see LICENSE for more details.
 
 """
-from mampy.utils import OptionVar, MelGlobals
-from mampy.selections import SelectionList, SelectionMask
-from mampy.components import Component
-from mampy.nodes import DagNode
+from mampy.dgcontainers import SelectionList, SelectionMask, OptionVar, MelGlobals
+from mampy.dgcomps import Component
+from mampy.dgnodes import DagNode
 
 __all__ = ['selected', 'ls', 'ordered_selection', 'get_node', 'get_component',
            'optionVar', 'mel_globals', 'get_active_mask']

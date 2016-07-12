@@ -466,7 +466,7 @@ class Component(object):
         count, array = self.mesh.getUvShellsIds()
         wanted = set([array[idx] for idx in self.indices])
         uvs.add([idx for idx, num in enumerate(array) if num in wanted])
-        return uvs
+        return uvs.convert_to(self.type)
 
     def is_complete(self):
         return {

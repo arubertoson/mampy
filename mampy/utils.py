@@ -26,6 +26,8 @@ __all__ = ['script_job_exists', 'get_outliner_index', 'undoable', 'repeatable',
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 EPS = sys.float_info.epsilon
 
 
