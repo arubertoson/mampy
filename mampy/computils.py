@@ -2,18 +2,24 @@
 """
 Utility functions used to create or collect dag components.
 """
+import logging
 import collections
 
 from maya import cmds
 import maya.api.OpenMaya as api
 
-from mampy.selections import SelectionList
-from mampy.components import MeshVert
+import mampy
+from mampy.dgcontainers import SelectionList
+from mampy.dgcomps import MeshVert, MeshMap
 
 
 __all__ = ['get_border_loop_from_edge_index', 'get_border_loop_from_edge',
            'get_indices_sharing_edge_border', 'get_border_edges_from_selection',
            'get_outer_edges_in_loop', 'get_connected_components']
+
+
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
 
 
 def get_border_loop_from_edge_index(index):
@@ -151,3 +157,57 @@ def get_connected_components(component, convert_to_origin_type=True):
                 break
 
     return get_return_list()
+
+
+def get_vert_order_on_edge_row(indices):
+    """
+    .. note:: Should probably be moved to mampy.
+    """
+    idx = 0
+    next_ = None
+    sorted_ = []
+    while indices:
+
+        edge = indices.pop(idx)
+        if next_ is None:
+            next_ = edge[-1]
+
+        sorted_.append(next_)
+        for i in indices:
+            if next_ in i:
+                idx = indices.index(i)
+                next_ = i[-1] if next_ == i[0] else i[0]
+                break
+
+    return sorted_
+
+
+def get_shells(components=None):
+    """
+    Collect selected uv shells.
+    """
+    s = components or mampy.selected()
+    if not s:
+        h = mampy.ls(hl=True)
+        if not h:
+            return logger.warn('Nothing selected.')
+        s.extend(h)
+
+    shells = SelectionList()
+    for c in s.itercomps():
+        if not c:
+            c = MeshMap(c.dagpath).get_complete()
+        else:
+            c = c.to_map()
+
+        count, array = c.mesh.getUvShellsIds()
+        if c.is_complete():
+            wanted = set(xrange(count))
+        else:
+            wanted = set([array[idx] for idx in c.indices])
+
+        for each in wanted:
+            shell = MeshMap.create(c.dagpath)
+            shell.add([idx for idx, num in enumerate(array) if num == each])
+            shells.append(shell)
+    return list(shells.itercomps())
