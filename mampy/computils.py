@@ -19,7 +19,7 @@ __all__ = ['get_border_loop_from_edge_index', 'get_border_loop_from_edge',
 
 
 logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
+# logger.setLevel(logging.DEBUG)
 
 
 def get_border_loop_from_edge_index(index):
@@ -82,10 +82,10 @@ def get_outer_edges_in_loop(connected):
         inner_vert = [v for v in outer_edge if not outer_vert == v].pop()
         indices.remove(outer_vert)
 
-        outer_edges.append(tuple(
-            MeshVert.create(str(connected.dagpath)).add(i)
-            for i in [outer_vert, inner_vert]
-        ))
+        vert = MeshVert.create(str(connected.dagpath))
+        vert.add([outer_vert, inner_vert])
+        outer_edges.append(vert)
+
     dag = str(connected.dagpath)
     return outer_edges, MeshVert.create(dag).add(indices)
 
@@ -211,3 +211,7 @@ def get_shells(components=None):
             shell.add([idx for idx, num in enumerate(array) if num == each])
             shells.append(shell)
     return list(shells.itercomps())
+
+
+if __name__ == '__main__':
+    pass
