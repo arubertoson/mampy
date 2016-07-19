@@ -43,7 +43,7 @@
 		],
 		"extra_paths":
 		[
-			"C:\\Program Files\\Autodesk\\Maya2015\\devkit\\other\\pymel\\extras\\completion\\py\\"
+			"C:\\Program Files\\Autodesk\\Maya2016.5\\devkit\\other\\pymel\\extras\\completion\\py\\"
 		],
 		"python_interpreter": "C:\\Python27\\python"
 	}
