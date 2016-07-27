@@ -445,16 +445,6 @@ class Component(object):
         elif self.type == MFn.kMeshVertComponent:
             return self._normals[idx]
 
-    # def get_normals(self, space=api.MSpace.kWorld, angle_weighted=False):
-    #     """
-    #     """
-    #     if self._normals is None:
-    #         self.__mesh_normals(space, angle_weighted)
-    #     normals = []
-    #     for idx in self.indices:
-
-    #     return [self._normals[idx] for idx in self.indices]
-
     def get_uv_shell(self):
         """
         Extend current :class:`Component` to contained uv shell and return new
