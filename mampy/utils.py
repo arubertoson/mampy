@@ -16,7 +16,7 @@ from PySide import QtGui
 import mampy
 from mampy.packages import profilehooks, mvp, pathlib2, contextlib2
 from mampy.packages.pathlib2 import Path
-from mampy.packages.contextlib2 import ContextDecorator
+from mampy.packages.contextlib2 import contextmanager, ContextDecorator
 
 
 __all__ = ['script_job_exists', 'get_outliner_index', 'undoable', 'repeatable',
@@ -83,6 +83,15 @@ def undoable(func):
         finally:
             cmds.undoInfo(closeChunk=True)
     return wrapper
+
+
+@contextmanager
+def undo():
+    cmds.undoInfo(openChunk=True)
+    try:
+        yield
+    finally:
+        cmds.undoInfo(closeChunk=True)
 
 
 def repeatable(func):
