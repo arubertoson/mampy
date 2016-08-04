@@ -150,6 +150,10 @@ class DependencyNode(NodeBase):
         self.__initialised = True
 
     @property
+    def exists(self):
+        return cmds.objExists(self.fullpath)
+
+    @property
     def fullpath(self):
         return self._mfndep.name()
 
