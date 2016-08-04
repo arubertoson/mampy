@@ -16,7 +16,7 @@ from PySide import QtGui
 import mampy
 from mampy.packages import profilehooks, mvp, pathlib2, contextlib2
 from mampy.packages.pathlib2 import Path
-from mampy.packages.contextlib2 import ContextDecorator
+from mampy.packages.contextlib2 import contextmanager, ContextDecorator
 
 
 __all__ = ['script_job_exists', 'get_outliner_index', 'undoable', 'repeatable',
@@ -29,6 +29,17 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 EPS = sys.float_info.epsilon
+
+
+class Singleton(type):
+    def __init__(cls, name, bases, dict):
+        super(Singleton, cls).__init__(name, bases, dict)
+        cls.instance = None
+
+    def __call__(cls, *args, **kwargs):
+        if cls.instance is None:
+            cls.instance = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls.instance
 
 
 def grouped(iterable, n):
@@ -72,6 +83,15 @@ def undoable(func):
         finally:
             cmds.undoInfo(closeChunk=True)
     return wrapper
+
+
+@contextmanager
+def undo():
+    cmds.undoInfo(openChunk=True)
+    try:
+        yield
+    finally:
+        cmds.undoInfo(closeChunk=True)
 
 
 def repeatable(func):
