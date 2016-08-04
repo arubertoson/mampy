@@ -83,12 +83,17 @@ class SelectionList(object):
     def __iter__(self):
         return iter(self._slist.getSelectionStrings())
 
-    def __contains__(self, value):
-        if isinstance(value, basestring):
-            return value in self._slist.getSelectionStrings()
-        if type(value) == tuple:
-            return self._slist.hasItemPartly(*value)
-        return self._slist.hasItem(value)
+    def __contains__(self, other):
+        if isinstance(other, basestring):
+            return other in self._slist.getSelectionStrings()
+        if isinstance(other, Component):
+            return self._slist.hasItemPartly(*other.node)
+        if isinstance(other, DagNode):
+            return self._slist.hasItem(other.node)
+        if isinstance(other, api.MDagPath):
+            return self._slist.hasItem(other)
+        else:
+            raise TypeError('Invalid type: {}'.format(type(other)))
 
     def __eq__(self, other):
         return list(self) == list(other)
