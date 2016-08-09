@@ -4,10 +4,10 @@ This module contains the `Component` class and functions for working with
 """
 import logging
 import itertools
+import collections
 
 # Maya API import
 import maya.cmds as cmds
-import maya.OpenMaya as om
 import maya.api.OpenMaya as api
 from maya.api.OpenMaya import MFn
 
@@ -352,48 +352,59 @@ class Component(object):
         complete._indexed.setCompleteData(count)
         return self.__class__(self.dagpath, complete.object)
 
-    def get_connected(self, index, comp_type=None):
+    def get_connected(self, return_original_type=True):
         """
         Construct a int array of connected component indices from given index.
 
-        :rtype: `MIntArray`
+        :rtype: `Component`
 
-        .. note:: Temporary method until api 2.0 get a similar feature.
-            This is slow and there are better alternativs. use as last
-            resort.
         """
-        # Create dagpath
-        dag_path = om.MDagPath()
-        s = om.MSelectionList()
-        s.add(str(self.dagpath))
-        s.getDagPath(0, dag_path)
+        def get_return_list(node):
+            new = MeshVert.create(self.dagpath)
+            new.add(node)
+            if return_original_type:
+                if self.type in (MFn.kMeshEdgeComponent, MFn.kMeshPolygonComponent):
+                    new = new.convert_to(self.type, internal=True)
+                else:
+                    new = new.convert_to(self.type)
+            return new
 
-        # Create component
-        component_index = om.MFnSingleIndexedComponent()
-        component = component_index.create(self.__mtype__)
-        component_index.addElement(index)
+        def merge_all(component):
 
-        # Get component
-        s = om.MSelectionList()
-        s.add(dag_path, component)
-        s.getDagPath(0, dag_path, component)
+            def dfs(node, index):
+                taken[index] = True
+                while True:
+                    updated = False
+                    for i, item in enumerate(component):
+                        if not taken[i] and not node.isdisjoint(item):
+                            taken[i] = updated = True
+                            node.update(item)
 
-        # Find connected components
-        connected = om.MIntArray()
-        iterator = {
-            MFn.kMeshVertComponent: om.MItMeshVertex,
-            MFn.kMeshEdgeComponent: om.MItMeshEdge,
-            MFn.kMeshPolygonComponent: om.MItMeshPolygon,
-        }[self.__mtype__]
-        to_type = {
-            MFn.kMeshVertComponent: 'getConnectedVertices',
-            MFn.kMeshEdgeComponent: 'getConnectedEdges',
-            MFn.kMeshPolygonComponent: 'getConnectedFaces',
-        }[comp_type or self.__mtype__]
+                    if not updated:
+                        return get_return_list(node)
 
-        iterator = iterator(dag_path, component)
-        getattr(iterator, to_type)(connected)
-        return connected
+            taken = [False] * len(component)
+            for i, node in enumerate(component):
+                if not taken[i]:
+                    yield dfs(node, i)
+
+        # Make sure we are working with edges, edges are the most viable component to
+        # try to find connected with.
+        component = self
+        if not self.type == MFn.kMeshEdgeComponent:
+            if self.type in [MFn.kMeshVertComponent, MFn.kMeshMapComponent]:
+                component = self.to_edge(internal=True)
+            else:
+                component = self.to_edge()
+
+        # Sorting the edge indices into shared sets will make the code run six times
+        # faster in dfs.
+        edge_indices = [component.mesh.getEdgeVertices(e) for e in component.indices]
+        index_vert_map = collections.defaultdict(set)
+        for edge in edge_indices:
+            index_vert_map[edge[0]].update(edge)
+
+        return merge_all(index_vert_map.values())
 
     def get_mesh_shell(self):
         """

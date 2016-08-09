@@ -6,7 +6,6 @@ import logging
 import collections
 
 from maya import cmds
-import maya.api.OpenMaya as api
 
 import mampy
 from mampy.dgcontainers import SelectionList
@@ -15,7 +14,7 @@ from mampy.dgcomps import MeshVert, MeshMap
 
 __all__ = ['get_border_loop_from_edge_index', 'get_border_loop_from_edge',
            'get_indices_sharing_edge_border', 'get_border_edges_from_selection',
-           'get_outer_edges_in_loop', 'get_connected_components']
+           'get_outer_edges_in_loop']
 
 
 logger = logging.getLogger(__file__)
@@ -88,75 +87,6 @@ def get_outer_edges_in_loop(connected):
 
     dag = str(connected.dagpath)
     return outer_edges, MeshVert.create(dag).add(indices)
-
-
-def get_connected_components(component, convert_to_origin_type=True):
-    """
-    Loop through given indices and check if they are connected. Maps
-    connected indices and returns a dict.
-
-    .. todo: rewrite if / elif segments to something a bit more pleasing to
-            the eyes
-    """
-    def is_ids_in_loop(ids):
-        """
-        Check if id is connected to any indices currently in
-        connected[connected_set_count] key.
-        """
-        id1, id2 = ids
-        for edge in connected[connected_set_count]:
-            if id1 in edge or id2 in edge:
-                return True
-        return False
-
-    def get_return_list():
-        """
-        Create return list containing connected components.
-        """
-        # Create list and append connected comps as list object.
-        return_list = SelectionList()
-        for i in connected.itervalues():
-            return_comp = MeshVert.create(component.dagpath)
-            return_comp.add(set(sum(i, ())))
-            if component.type in [api.MFn.kMeshEdgeComponent,
-                                  api.MFn.kMeshPolygonComponent]:
-                converted = return_comp.convert_to(component.type, internal=True)
-            else:
-                converted = return_comp.convert_to(component.type)
-            return_list.append(converted)
-        return return_list
-
-    # Needs to make sure that edges does not extend outside of the
-    # selection border.
-    if component.type == api.MFn.kMeshEdgeComponent:
-        edge = component
-    elif component.type in [api.MFn.kMeshVertComponent,
-                            api.MFn.kMeshMapComponent]:
-        edge = component.to_edge(internal=True)
-    else:
-        edge = component.to_edge()
-
-    # Set up necessary variables
-    connected_set_count = 0
-    connected = collections.defaultdict(set)
-    indices = set([edge.mesh.getEdgeVertices(e) for e in edge.indices])
-    while indices:
-
-        connected_set_count += 1
-        connected[connected_set_count].add(indices.pop())
-
-        # Map connected until no match can be found
-        while True:
-            loop_growing = False
-            for ids in indices.copy():
-                if is_ids_in_loop(ids):
-                    loop_growing = True
-                    connected[connected_set_count].add(ids)
-                    indices.remove(ids)
-            if not loop_growing:
-                break
-
-    return get_return_list()
 
 
 def get_vert_order_on_edge_row(indices):
