@@ -8,8 +8,8 @@ import collections
 from maya import cmds
 
 import mampy
-from mampy.dgcontainers import SelectionList
-from mampy.dgcomps import MeshVert, MeshMap
+from mampy.containers import SelectionList
+from mampy.comps import MeshVert, MeshMap
 
 
 __all__ = ['get_border_loop_from_edge_index', 'get_border_loop_from_edge',

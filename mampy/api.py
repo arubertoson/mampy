@@ -5,12 +5,12 @@ This module implements the Mampy API.
 :license: MIT, see LICENSE for more details.
 
 """
-from mampy.dgcontainers import SelectionList, SelectionMask, OptionVar, MelGlobals
-from mampy.dgcomps import Component
-from mampy.dgnodes import DagNode
+from mampy.containers import ComponentList, SelectionList, SelectionMask, OptionVar, MelGlobals
+from mampy.comps import Component
+from mampy.nodes import DagNode
 
 __all__ = ['selected', 'ls', 'ordered_selection', 'get_node', 'get_component',
-           'optionVar', 'mel_globals', 'get_active_mask']
+           'optionVar', 'mel_globals', 'get_active_mask', 'comp_ls']
 
 
 def selected():
@@ -21,6 +21,27 @@ def selected():
     :rtype: :class:`.SelectionList`
     """
     return SelectionList.from_selection()
+
+
+def comp_ls(*args, **kwargs):
+    """
+    Defaults to selected
+    """
+    if not args and not kwargs:
+        return ComponentList.from_selection()
+    return ComponentList.from_ls(*args, **kwargs)
+
+
+def dagp_ls(*args, **kwargs):
+    pass
+
+
+def depn_ls(*args, **kwargs):
+    pass
+
+
+def plug_ls(*args, **kwargs):
+    pass
 
 
 def ls(*args, **kwargs):
@@ -155,3 +176,6 @@ def get_active_mask():
     return SelectionMask.active()
 
 
+
+if __name__ == '__main__':
+    print component_ls()
