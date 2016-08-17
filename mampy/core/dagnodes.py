@@ -24,6 +24,10 @@ def get_dagpath_from_string(input_string):
     return api.MSelectionList().add(input_string).getDagPath(0)
 
 
+def get_dependency_from_string(input_string):
+    return api.MSelectionList().add(input_string).getDependNode(0)
+
+
 class Plug(object):
     """
     Wrapping API ``api.OpenMaya.MPlug`` for easier functionality.
@@ -75,23 +79,29 @@ class Plug(object):
 class AbstractNode(object):
 
     def __init__(self):
-        self._attributes = set()
+        self._attributes = None
 
-    # def __getattr__(self, key):
-    #     if key in self._attributes:
-    #         return self.get_plug(key).get()
+    def __repr__(self):
+        return '{}({!r})'.format(self.__class__.__name__, str(self))
 
-    # def __setattr__(self, key, value):
-    #     if key == '_attributes':
-    #         return super(AbstractNode, self).__setattr__(key, value)
+    def __str__(self):
+        return '{}'.format(self._mfnnode.fullPathName())
 
-    #     if key in self._attributes:
-    #         self.get_plug(key).set(value)
-    #     else:
-    #         super(AbstractNode, self).__setattr__(key, value)
+    def __getattr__(self, key):
+        if key in self.attributes:
+            return self.get_plug(key).get()
 
-    # __getitem__ = __getattr__
-    # __setitem__ = __setattr__
+    def __setattr__(self, key, value):
+        if key == '_attributes':
+            return super(AbstractNode, self).__setattr__(key, value)
+
+        if key in self.attributes:
+            self.get_plug(key).set(value)
+        else:
+            super(AbstractNode, self).__setattr__(key, value)
+
+    __getitem__ = __getattr__
+    __setitem__ = __setattr__
 
     def get_plug(self, name):
         """
@@ -108,54 +118,11 @@ class AbstractNode(object):
     @property
     def attributes(self):
         if self._attributes is None:
-            shortnames = cmds.listAttr(self.fullpath, shortName=True)
-            longnames = cmds.listAttr(self.fullpath)
+            shortnames = cmds.listAttr(str(self), shortNames=True)
+            longnames = cmds.listAttr(str(self))
             self._attributes = set(shortnames + longnames)
         return self._attributes
 
-
-# class DependencyNode(AbstractNode):
-
-#     def __init__(self, dagpath):
-#         super(DependencyNode, self).__init__()
-
-#         self.dagpath = dagpath
-#         self._mfndep = api.MSelectionList().add(dagpath).getDependNode(0)
-
-#         self._plugs = None
-
-#     @property
-#     def fullpath(self):
-#         return self._mfndep.name()
-
-#     @property
-#     def node(self):
-#         return self._mfndep
-
-#     @property
-#     def mobject(self):
-#         return self._mfndep.node()
-
-#     def connect(self, attribute, other):
-#         if isinstance(other, Plug):
-#             self.get_plug(attribute).connect(other)
-#         else:
-#             self.get_plug(attribute).connect(self.get_plug(attribute))
-
-#     def disconnect(self, attribute, other):
-#         if isinstance(other, Plug):
-#             self.get_plug(attribute).disconnect(other)
-#         else:
-#             self.get_plug(attribute).disconnect(self.get_plug(attribute))
-
-#     @property
-#     def plugs(self):
-#         if self._plugs is None:
-#             self._plugs = (Plug(p) for p in self._mfndep.getConnections())
-#         return self._plugs
-
-#     def exists(self):
-#         return cmds.objectExists(self.fullpath)
 
 class CleanSetAttrMeta(type):
     def __call__(cls, *args, **kwargs):
@@ -166,7 +133,56 @@ class CleanSetAttrMeta(type):
         return self
 
 
-class Node(object):
+class DependencyNode(AbstractNode):
+    __metaclass__ = CleanSetAttrMeta
+
+    def __init__(self, dagpath):
+        super(DependencyNode, self).__init__()
+        if isinstance(dagpath, basestring):
+            dagobject = get_dependency_from_string(dagpath)
+
+        self.dagpath = dagpath
+        self._mfnnode = api.MFnDependencyNode(dagobject)
+
+        self._plugs = None
+
+    def __str__(self):
+        return '{}'.format(self._mfnnode.name())
+
+    def __contains__(self, name):
+        return self._mfnnode.hasAttribute(name)
+
+    @property
+    def node(self):
+        return self._mfnnode
+
+    @property
+    def mobject(self):
+        return self._mfnnode.node()
+
+    def connect(self, attribute, other):
+        if isinstance(other, Plug):
+            self.get_plug(attribute).connect(other)
+        else:
+            self.get_plug(attribute).connect(self.get_plug(attribute))
+
+    def disconnect(self, attribute, other):
+        if isinstance(other, Plug):
+            self.get_plug(attribute).disconnect(other)
+        else:
+            self.get_plug(attribute).disconnect(self.get_plug(attribute))
+
+    @property
+    def plugs(self):
+        if self._plugs is None:
+            self._plugs = (Plug(p) for p in self._mfndep.getConnections())
+        return self._plugs
+
+    def exists(self):
+        return cmds.objectExists(str(self))
+
+
+class Node(AbstractNode):
     __metaclass__ = CleanSetAttrMeta
 
     def __new__(cls, dagpath, object=None):
@@ -184,35 +200,16 @@ class Node(object):
         return super(Node, cls).__new__(cls, dagpath, object)
 
     def __init__(self, dagpath, object=None):
+        super(Node, self).__init__()
         # In case we create the node from subclass
         if isinstance(dagpath, basestring):
             dagpath = get_dagpath_from_string(dagpath)
 
-        self._attributes = set()
         self._dagpath = dagpath
-        self._mfnnode = object(dagpath)
-
-    def __getattr__(self, key):
-        if key in self.attributes:
-            return self.get_plug(key).get()
-
-    def __setattr__(self, name, value):
-        if name == '_attributes':
-            return super(Node, self).__setattr__(name, value)
-
-        if name in self.attributes:
-            self.get_plug(name).set(value)
-        else:
-            super(Node, self).__setattr__(name, value)
-
-    __getitem__ = __getattr__
-    __setitem__ = __setattr__
-
-    def __repr__(self):
-        return '{}({!r})'.format(self.__class__.__name__, str(self))
-
-    def __str__(self):
-        return '{}'.format(self._mfnnode.fullPathName())
+        try:
+            self._mfnnode = object(dagpath)
+        except TypeError:
+            self._mfnnode = object(self.mobject)
 
     def __eq__(self, other):
         return self._dagpath == other._dagpath
@@ -231,14 +228,6 @@ class Node(object):
         .. note:: Just here for backwards compability.
         """
         return self._mfnnode.hasChild(mobject)
-
-    @property
-    def attributes(self):
-        if not self._attributes:
-            shortnames = cmds.listAttr(str(self), shortNames=True)
-            longnames = cmds.listAttr(str(self))
-            self._attributes = set(shortnames + longnames)
-        return self._attributes
 
     @property
     def bbox(self):
@@ -294,18 +283,6 @@ class Node(object):
             return self.from_object(self._mfnnode.parent(index))
         except RuntimeError:
             return None
-
-    def get_plug(self, name):
-        """
-        Construct and return Plug object.
-
-        :rtype: :class:`Plug`
-        """
-        try:
-            return Plug(self, self._mfnnode.findPlug(name, False))
-        except RuntimeError:
-            raise AttributeError('{} object has no attribute "{}"'.format(
-                                 self.__class__.__name__, name))
 
     def get_transform(self):
         """
@@ -416,55 +393,5 @@ class Transform(Node):
 
 
 if __name__ == '__main__':
-    persp = Node('persp1')
-    persp_trsn = persp.get_transform()
-    for i in persp_trsn.attributes:
-        if i.startswith('r'):
-            print i
-
-    Cam = collections.namedtuple('Cam', 'translate rotate centerOfInterest')
-    test = Cam(
-        persp_trsn['translate'],
-        persp_trsn['rotate'],
-        persp['centerOfInterest'],
-    )
-
-    print test
-    # if persp.is_ortho():
-    #     persp['orthographic'] = False
-    # else:
-    #     vec = persp.get_view_direction()
-    #     center = persp.get_center_of_interest().z
-    #     vec_pos = vec * center
-
-    #     # Get axis
-    #     axes = [
-    #         ('x', (1, 0, 0)),
-    #         ('y', (0, 1, 0)),
-    #         ('z', (0, 0, 1)),
-    #         ('x', (-1, 0, 0)),
-    #         ('y', (0, -1, 0)),
-    #         ('z', (0, 0, -1)),
-    #     ]
-    #     best_vec = {}
-    #     for axis, wv in axes:
-    #         dot = vec * api.MVector(wv)
-    #         if axis not in best_vec or (axis in best_vec and dot > best_vec[axis]):
-    #             best_vec[axis] = dot
-    #     axis = max(best_vec, key=best_vec.get)
-
-    #     trans = persp.get_transform()
-    #     transl = trans.get_translation()
-    #     vec = transl - vec_pos
-    #     for i in 'xyz'.replace(axis, ''):
-    #         setattr(transl, i, getattr(vec, i))
-
-    #     trans['translate'] = list(transl)
-
-    #     persp_trans = persp.get_transform()
-    #     rot = persp_trans.get_rotate()
-
-    #     persp['orthographic'] = True
-    #     persp['orthographicWidth'] = abs(center)
-    #     persp_trans['rotateX'] = int(90 * round(float(rot.x)/90))
-    #     persp_trans['rotateY'] = int(90 * round(float(rot.y)/90))
+    persp = DependencyNode('polyBevel1')
+    print str(persp)
