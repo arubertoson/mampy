@@ -34,4 +34,4 @@ __version__ = '0.1.1'
 __license__ = 'MIT'
 
 
-from mampy.api import *
+from mampy._old.api import *

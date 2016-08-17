@@ -11,7 +11,7 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as api
 from maya.api.OpenMaya import MFn
 
-from mampy.datatypes import BoundingBox
+from .datatypes import BoundingBox
 
 
 logger = logging.getLogger(__name__)
@@ -50,6 +50,9 @@ class Component(object):
     def __new__(cls, dagpath, compobj=None):
         # If class is not called with MDagPath or MObject creates new MDagPath
         # and MObject from either string list or a string.
+        if type(dagpath) == tuple:
+            dagpath, compobj = dagpath
+
         if not (isinstance(dagpath, api.MDagPath) and
                 isinstance(compobj, api.MObject)):
             slist = api.MSelectionList()

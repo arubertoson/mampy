@@ -5,34 +5,40 @@ Module to store containers.
 import logging
 import textwrap
 import collections
+from abc import ABCMeta, abstractmethod
 
 from maya import cmds, mel
-import maya.OpenMaya as oldapi
+import maya.OpenMaya as _oldapi
 from maya.OpenMaya import MGlobal as mgl
 from maya.api import OpenMaya as api
 
 
-from mampy.comps import Component
-from mampy.nodes import DagNode
+from .comps import Component
+from .nodes import DagNode, DependencyNode, Plug
 
 logger = logging.getLogger(__name__)
 
 
-class SelectionList2(object):
+class AbstractSelectionList(object):
+    __metaclass__ = ABCMeta
 
-    def __init__(self, selection_list=None, merge=True):
+    def __init__(self, elements=None, merge=True):
         self._slist = api.MSelectionList()
-        if isinstance(selection_list, api.MSelectionList):
-            self._slist = api.MSelectionList(selection_list)
-        else:
-            for element in selection_list:
-                self._add_to_internal_list(element, merge)
+        self._populate_list(elements, merge)
+
+    def _populate_list(self, elements, merge):
+        if elements is not None:
+            if isinstance(elements, api.MSelectionList):
+                self._slist = self._slist.merge(elements)
+            else:
+                for element in elements:
+                    self._slist.add(element)
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, str(self))
 
     def __str__(self):
-        return str(self._slist)
+        return str(list(i for i in self))
 
     def __len__(self):
         return self._slist.length()
@@ -49,29 +55,33 @@ class SelectionList2(object):
     def __hash__(self):
         return hash(str(self))
 
-    def _add_to_internal_list(self, element):
-        raise NotImplementedError()
+    @abstractmethod
+    def __getitem__(self, key):
+        pass
+
+    @abstractmethod
+    def __contains__(self, other):
+        pass
+
+    @abstractmethod
+    def __iter__(self):
+        pass
 
     @classmethod
     def from_selection(cls):
-        return cls(api.MGlobal.getActiveSelectionList())
+        return cls(cmds.ls(sl=True))
 
     @classmethod
-    def from_name(cls, name):
-        return cls(api.MGlobal.getSelectionListByName(name))
-
-    @classmethod
-    def from_ls(cls, *args, **kwargs):
-        merge = True if 'fl' in kwargs or 'flatten' in kwargs else False
+    def from_ls(cls, merge=False, *args, **kwargs):
+        if not merge:
+            merge = True if 'fl' in kwargs or 'flatten' in kwargs else False
         return cls(cmds.ls(*args, **kwargs), merge)
 
     def append(self, value):
         if isinstance(value, basestring):
             self._slist.add(value)
-        elif isinstance(value, Component):
-            self._slist.add(value.node, mergeWithExisting=False)
         else:
-            raise TypeError('Invalid type: {}'.format(type(value)))
+            self._slist.add(value.node, mergeWithExisting=False)
 
     def copy(self):
         return self.__class__(api.MSelectionList().copy(self._slist))
@@ -80,14 +90,10 @@ class SelectionList2(object):
         return self._slist.clear()
 
     def extend(self, other, strategy=api.MSelectionList.kMergeNormal):
-        if isinstance(other, self.__class__):
-            print 'mergin'
-            self._slist.merge(other._slist, strategy)
-        else:
-            raise TypeError('Invalid type: {}'.format(type(other)))
+        self._slist.merge(other._slist, strategy)
 
     def pop(self, index=None):
-        index = len(self) - 1 if index is None else index
+        index = len(self)-1 if index is None else index
         value = self[index]
         self.remove(index)
         return value
@@ -101,43 +107,79 @@ class SelectionList2(object):
         return self._slist.remove(value)
 
 
-class ComponentList(SelectionList2):
+class ComponentList(AbstractSelectionList):
 
-    def __init__(self, selection_list1=None, merge=True):
-        super(ComponentList, self).__init__(selection_list1, merge)
-
-    def _add_to_internal_list(self, element, merge):
-        if isinstance(element, Component):
-            self._slist.merge(element._slist)
-        else:
-            tmp_clist = api.MSelectionList()
-            tmp_clist.add(element)
-            dp, comp = tmp_clist.getComponent(0)
-            if not comp.isNull():
-                self._slist.add((dp, comp), mergeWithExisting=merge)
+    def __init__(self, elements=None, merge=True):
+        super(ComponentList, self).__init__(elements, merge)
 
     def __getitem__(self, key):
         if isinstance(key, slice):
-            sliced = [self._slist.getComponent(i)
-                      for i in xrange(*key.indices(len(self)))]
-            return self.__class__(sliced)
+            return self.__class__(
+                [self._slist.getComponent(i) for i in xrange(*key.indices(len(self)))]
+            )
         else:
-            return Component(*self._slist.getComponent(key))
+            return Component(self._slist.getComponent(key))
 
     def __iter__(self):
-        for i in xrange(len(self)):
-            yield Component(*self._slist.getComponent(i))
+        return (Component(self._slist.getComponent(i)) for i in xrange(len(self)))
 
     def __contains__(self, other):
-        if isinstance(other, basestring):
-            return other in self._slist.getSelectionStrings()
-        elif isinstance(other, Component):
-            return self._slist.hasItemPartly(*other.node)
-        else:
-            raise TypeError('Invalid type: {}'.format(type(other)))
+        return self._slist.hasItemPartly(*other.node)
 
     def toggle(self, component):
         return self._slist.toggle(*component)
+
+
+class DagbaseList(AbstractSelectionList):
+
+    def __init__(self, object, elements=None, merge=True):
+        super(DagbaseList, self).__init__(elements, merge)
+        self._object = object
+        self._get_func = {
+            DagNode: 'getDagPath',
+            DependencyNode: 'getDependNode',
+            Plug: 'getPlug',
+        }[self._object]
+
+    def __iter__(self):
+        get = getattr(self._slist, self._get_func)
+        for x in xrange(len(self)):
+            yield self._object(get(x))
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return self.__class__([
+                getattr(self._slist, self._get_func)(i)
+                for i in xrange(*key.indices(len(self)))
+            ])
+        else:
+            return self._object(getattr(self._slist, self._get_func)(key))
+
+    def __contains__(self, other):
+        return self._slist.hasItem(other)
+
+    @classmethod
+    def from_name(cls, name):
+        return cls(api.MGlobal.getSelectionListByName(name))
+
+    @classmethod
+    def from_hilited(cls, *args, **kwargs):
+        return cls(cmds.ls(hl=True, *args, **kwargs))
+
+
+class DagpathList(DagbaseList):
+    def __init__(self, dagpath=None, merge=True):
+        super(DagpathList, self).__init__(DagNode, dagpath, merge)
+
+
+class DependencyList(DagbaseList):
+    def __init__(self, dagpath=None, merge=True):
+        super(DependencyList, self).__init__(DependencyNode, dagpath, merge)
+
+
+class PlugList(DagbaseList):
+    def __init__(self, dagpath=None, merge=True):
+        super(PlugList, self).__init__(Plug, dagpath, merge)
 
 
 class SelectionList(object):
@@ -229,8 +271,8 @@ class SelectionList(object):
     def __hash__(self):
         return hash(list(self))
 
-    # def index(self, value):
-    #     return self._slist.getSelectionStrings().index(value)
+    def index(self, value):
+        return self._slist.getSelectionStrings().index(value)
 
     @classmethod
     def from_ls(cls, *args, **kwargs):
@@ -367,13 +409,13 @@ class SelectionMask(object):
 
     def __new__(cls, mask=None):
         cls = object.__new__(cls, mask)
-        for a in oldapi.MSelectionMask.__dict__:
+        for a in _oldapi.MSelectionMask.__dict__:
             if a.startswith('kSelect'):
-                setattr(cls, a, oldapi.MSelectionMask.__dict__[a])
+                setattr(cls, a, _oldapi.MSelectionMask.__dict__[a])
         return cls
 
     def __init__(self, mask=None):
-        self._mask = mask or oldapi.MSelectionMask()
+        self._mask = mask or _oldapi.MSelectionMask()
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, list(self))
@@ -469,7 +511,7 @@ class SelectionMask(object):
         """
         Empty mask by creating new one and overriding it.
         """
-        self._mask = oldapi.MSelectionMask()
+        self._mask = _oldapi.MSelectionMask()
         self.update()
 
     def update(self):
@@ -698,4 +740,16 @@ class MelGlobals(collections.Mapping):
 
 
 if __name__ == '__main__':
-    print ComponentList.from_ls(cls)
+    sl = DagpathList.from_selection()
+    print sl
+    s = sl[0]
+    x = sl.pop()
+    print s, x
+    for i in sl:
+        print i == s
+
+    print s.node
+    # pre = ComponentList.from_ls(preSelectHilite=True).pop()
+    # sl = ComponentList.from_selection()
+    # for i in sl:
+    #     print i

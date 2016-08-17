@@ -18,7 +18,7 @@ import logging
 import collections
 
 import maya.cmds as cmds
-import maya.OpenMaya as oldapi
+import maya.OpenMaya as _oldapi
 import maya.api.OpenMaya as api
 
 logger = logging.getLogger(__name__)
@@ -40,15 +40,24 @@ class Plug(object):
     """
 
     def __init__(self, node, plug):
-        self.node = node
+        print 'getplug', repr(node), repr(plug)
+        self.depnode = node
         self._mfnplug = plug
 
     def __str__(self):
         return str(cmds.getAttr(self.name))
 
     @property
+    def node(self):
+        return self._mfnplug
+
+    @property
+    def mobject(self):
+        return self._mfnplug.node()
+
+    @property
     def name(self):
-        return '{}.{}'.format(self.node.fullpath, self.plug_name)
+        return '{}.{}'.format(self.depnode.fullpath, self.plug_name)
 
     @property
     def plug_name(self):
@@ -89,13 +98,14 @@ class NodeBase(object):
 
     def __setattr__(self, name, value):
         # Needed to be able to set attributes in __init__
+        print('hello')
         if '_{}__initialised'.format(self.__class__.__name__) not in self.__dict__:
             return dict.__setattr__(self, name, value)
         # to stop recursive when calling property
         elif name == '_attributes':
             return super(NodeBase, self).__setattr__(name, value)
 
-        if name in self.attributes:
+        if name in self._attributes:
             self.get_plug(name).set(value)
         else:
             super(NodeBase, self).__setattr__(name, value)
@@ -146,8 +156,14 @@ class DependencyNode(NodeBase):
         tmp = api.MSelectionList(); tmp.add(dagpath)
         self._mfndep = api.MFnDependencyNode(tmp.getDependNode(0))
 
+        self._plugs = None
+
         # Finished init
         self.__initialised = True
+
+    @property
+    def node(self):
+        return self._mfndep
 
     @property
     def exists(self):
@@ -171,7 +187,9 @@ class DependencyNode(NodeBase):
 
     @property
     def plugs(self):
-        return self._mfndep.getConnections()
+        if self._plugs is None:
+            self._plugs = (Plug(p) for p in self._mfndep.getConnections())
+        return self._plugs
 
 
 class DagNodeFactory(type):
@@ -226,7 +244,7 @@ class DagNode(NodeBase):
         super(DagNode, self).__init__()
         self._dagpath = dagpath
         self._dagnode = api.MFnDagNode(dagpath)
-        self._mfndep = api.MFnDependencyNode(self.node)
+        self._mfndep = api.MFnDependencyNode(self.mobject)
         self._dependency = DependencyNode(dagpath)
 
         # Finished init
@@ -275,6 +293,10 @@ class DagNode(NodeBase):
         """
         :rtype: ``api.OpenMaya.MObject``
         """
+        return self._dagpath
+
+    @property
+    def mobject(self):
         return self._dagpath.node()
 
     @property
@@ -372,10 +394,10 @@ class DagNode(NodeBase):
         return Transform(self._dagpath.getAPathTo(self._dagpath.transform()))
 
     def is_child_of(self, other):
-        return self._dagnode.hasParent(other.node)
+        return self._dagnode.hasParent(other.mobject)
 
     def is_parent_of(self, other):
-        return self._dagnode.hasChild(other.node)
+        return self._dagnode.hasChild(other.mobject)
 
     def is_root(self):
         p = self.get_parent()
@@ -404,9 +426,7 @@ class Camera(DagNode):
     def __init__(self, dagpath):
         super(Camera, self).__init__(dagpath)
 
-        s = oldapi.MSelectionList(); s.add(self.fullpath)
-        dp = oldapi.MDagPath(); s.getDagPath(0, dp)
-        self._mfncam = oldapi.MFnCamera(dp)
+        self._mfncam = api.MFnCamera(dagpath)
 
     def get_view_direction(self, space=api.MSpace.kWorld):
         """
@@ -476,17 +496,19 @@ class Transform(DagNode):
 
 
 if __name__ == '__main__':
-    p = DagNode('pPlane2')
-    t = api.MVector(2, 2, 2)
-    for i in t:
-        print i
-    print dir(t)
-    # print len(t)
-    # print hasattr(t, 'len')
-    # p['scale'] = t
-    # print type(p['rotate'][0])
-    # print hasattr(api.MVector(2, 2, 2), '__len__')
-    # print p['scaleX']
-    # p['scale'] = (2, )
-    # print p['fraction']
-    # p.segments = 2
+    from maya.api import OpenMaya as api
+
+    sl = api.MSelectionList()
+    for i in cmds.ls('polyBevel*'):
+        sl.add(i)
+
+    for i in xrange(sl.length()):
+        dep = api.MFnDependencyNode(sl.getDependNode(i))
+        plug = dep.findPlug('fraction', False)
+        # print plug.array()
+        print dep.getConnections()
+
+        # plug = sl.getPlug(i)
+        # print plug.node().isNull()
+        # print sl.getComponent(i)
+
