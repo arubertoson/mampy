@@ -1,5 +1,4 @@
 
-
 import maya.api.OpenMaya as api
 
 
@@ -10,18 +9,24 @@ def get_average_vert_normal(normals, *args):
     return vec / len(args)
 
 
-class IndexDict(dict):
+class IndicesDict(dict):
     """
     Container object for points bound by dictionary
     """
-    def __str__(self):
-        return '{}'.format(list(self))
-
     def __iter__(self):
-        return self.itervalues()
+        return iter(set(sum(self.itervalues(), ())))
 
     def __contains__(self, key):
         return key in self.values()
 
     def has_index(self, index):
         return index in self.keys()
+
+
+class ObjectDict(IndicesDict):
+    def __iter__(self):
+        return self.itervalues()
+
+
+if __name__ == '__main__':
+    pass

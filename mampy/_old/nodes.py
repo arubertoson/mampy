@@ -98,14 +98,13 @@ class NodeBase(object):
 
     def __setattr__(self, name, value):
         # Needed to be able to set attributes in __init__
-        print('hello')
         if '_{}__initialised'.format(self.__class__.__name__) not in self.__dict__:
             return dict.__setattr__(self, name, value)
         # to stop recursive when calling property
         elif name == '_attributes':
             return super(NodeBase, self).__setattr__(name, value)
 
-        if name in self._attributes:
+        if name in self.attributes:
             self.get_plug(name).set(value)
         else:
             super(NodeBase, self).__setattr__(name, value)

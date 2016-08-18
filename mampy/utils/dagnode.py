@@ -2,10 +2,11 @@
 """
 from PySide import QtGui
 
+from maya import cmds
 from maya import OpenMaya as oapi
 
 from mampy.packages.mvp import Viewport
-from .decorators import object_mode, select_keep
+from mampy.utils.decorators import object_mode, select_keep
 
 
 @select_keep()
@@ -59,3 +60,19 @@ def get_objects_in_view(objects=True):
         return from_screen.pop()
     except IndexError:
         return None
+
+
+def get_outliner_index(dagnode):
+    """
+    Return the current index of the given node in the outliner.
+    """
+    if dagnode.is_root():
+        return cmds.ls(l=True, assemblies=True).index(str(dagnode))
+    else:
+        outliner = cmds.ls(dag=True, tr=True, l=True)
+        parent = dagnode.get_parent()
+        return outliner.index(str(dagnode)) - outliner.index(str(parent))
+
+
+if __name__ == '__main__':
+    pass

@@ -12,14 +12,18 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as api
 from maya.api.OpenMaya import MFn
 
-from .utils import IndexDict, get_average_vert_normal
-from .datatypes import BoundingBox
+from mampy.core.utils import IndicesDict, ObjectDict, get_average_vert_normal
+from mampy.core.datatypes import BoundingBox
 
 
 logger = logging.getLogger(__name__)
 
 
 __all__ = ['SingleIndexComponent', 'MeshVert', 'MeshEdge', 'MeshPolygon', 'MeshMap']
+
+
+def get_component_from_string(input_string):
+    return api.MSelectionList().add(input_string).getComponent(0)
 
 
 class AbstractComponent(object):
@@ -81,14 +85,14 @@ class AbstractComponent(object):
             self._indexed.addElement(indices)
         return self
 
-    def convert_to(self, **kwargs):
+    def convert_to(self, cls, **kwargs):
         sl = api.MSelectionList()
-        for dp in cmds.polyListComponentConversion(list(self), **kwargs):
+        for dp in cmds.polyListComponentConversion(self.cmdslist(), **kwargs):
             sl.add(dp)
-        return self.__class__(*sl.getComponent(0))
+        return cls(*sl.getComponent(0))
 
-    def select(self, **kwargs):
-        cmds.select(api.MSelectionList().add(self.node).getSelectionStrings(), **kwargs)
+    def cmdslist(self):
+        return api.MSelectionList().add(self.node).getSelectionStrings()
 
 
 class SingleIndexComponent(AbstractComponent):
@@ -96,7 +100,6 @@ class SingleIndexComponent(AbstractComponent):
 
     def __init__(self, dagpath, object=None):
         super(SingleIndexComponent, self).__init__(dagpath, object)
-        print('in single', dagpath, object)
         self._indexed = self._indexed_class(self.object)
 
         self._verts = None
@@ -130,7 +133,7 @@ class SingleIndexComponent(AbstractComponent):
         return self.new().add(self.indices[key])
 
     def __iter__(self):
-        return iter(api.MSelectionList().add(self.node).getSelectionStrings())
+        return iter(self.indices)
 
     def __eq__(self, other):
         return self._indexed == other._indexed
@@ -177,15 +180,14 @@ class SingleIndexComponent(AbstractComponent):
     @property
     def points(self):
         if self.space not in self._points:
+            pts = self.mesh.getPoints(self.space)
             if self.type in [MFn.kMeshMapComponent, MFn.kMeshVertComponent]:
                 if self.type == MFn.kMeshMapComponent:
                     pts = list(itertools.izip(*self.mesh.getUVs()))
-                else:
-                    pts = self.mesh.getPoints(self.space)
                 indices = self.indices
             else:
                 indices = self.vertices
-            self._points[self.space] = IndexDict({idx: pts[idx] for idx in indices})
+            self._points[self.space] = ObjectDict({idx: pts[idx] for idx in indices})
         return self._points[self.space]
 
     @property
@@ -254,8 +256,18 @@ class SingleIndexComponent(AbstractComponent):
         complete._indexed.setCompleteData(count)
         return self.__class__(self.dagpath, complete.object)
 
-    def get_connected_vert_indices(self):
+    def get_connected_components(self, convert=True):
         """Return connected vertices from self."""
+        def get_return_list(node):
+            new = MeshVert.create(self.dagpath).add(node)
+            if convert:
+                if self.type in (MFn.kMeshEdgeComponent,
+                                 MFn.kMeshPolygonComponent):
+                    new = new.convert_to(self.type, internal=True)
+                else:
+                    new = new.convert_to(self.type)
+            return new
+
         def connected_vert_indices(component):
             def dfs(node, index):
                 taken[index] = True
@@ -272,7 +284,7 @@ class SingleIndexComponent(AbstractComponent):
             taken = [False] * len(component)
             for i, node in enumerate(component):
                 if not taken[i]:
-                    yield dfs(node, i)
+                    yield get_return_list(dfs(node, i))
         # Make sure we are working with edges, edges are the most viable component to
         # try to find connected with.
         component = self
@@ -344,7 +356,7 @@ class SingleIndexComponent(AbstractComponent):
         return self.is_valid(MFn.kMeshMapComponent)
 
     def translate(self, **kwargs):
-        cmds.xform(list(self), **kwargs)
+        cmds.xform(self.cmdslist(), **kwargs)
 
     def to_vert(self, **kwargs):
         return self.convert_to(MFn.kMeshVertComponent, **kwargs)
@@ -359,13 +371,14 @@ class SingleIndexComponent(AbstractComponent):
         return self.convert_to(MFn.kMeshMapComponent, **kwargs)
 
     def convert_to(self, comptype, **kwargs):
-        kwargs.update({
-            MFn.kMeshVertComponent: {'toVertex': True},
-            MFn.kMeshEdgeComponent: {'toEdge': True},
-            MFn.kMeshPolygonComponent: {'toFace': True},
-            MFn.kMeshMapComponent: {'toUV': True},
-        }[comptype])
-        return super(SingleIndexComponent, self).convert_to(**kwargs)
+        cls, kw = {
+            MFn.kMeshVertComponent: (MeshVert, {'toVertex': True}),
+            MFn.kMeshEdgeComponent: (MeshEdge, {'toEdge': True}),
+            MFn.kMeshPolygonComponent: (MeshPolygon, {'toFace': True}),
+            MFn.kMeshMapComponent: (MeshMap, {'toUV': True}),
+        }[comptype]
+        kwargs.update(kw)
+        return super(SingleIndexComponent, self).convert_to(cls, **kwargs)
 
     def toggle(self, other=None):
         if other is None:
@@ -392,6 +405,42 @@ class MeshVert(SingleIndexComponent):
         if self.space not in self._normals:
             self._normals[self.space] = self.mesh.getVertexNormals(False, self.space)
         return self._normals[self.space]
+
+
+def get_border_loop_indices_from_edge_index(index):
+    return set(sorted([int(i) for i in cmds.polySelect(q=True, edgeBorder=index)]))
+
+
+def get_border_loop_indices_from_edge_object(component):
+    return set([
+        tuple(border for border in get_border_loop_indices_from_edge_index(idx))
+        for idx in component.indices
+    ])
+
+
+def get_outer_and_inner_edges_from_edge_loop(loop):
+    """
+    Return outer edges from a component object containing connected
+    edges.
+    """
+    # Get tuples with vert ids representing edges
+    # edges = connected.vertices
+    edge_vert_map = loop.vertices
+    indices = set(edge_vert_map)
+
+    # Get verts with least occurances
+    vert_count = collections.Counter(sum(edge_vert_map.itervalues(), ()))
+    outer_verts = set(i[0] for i in vert_count.most_common()[-2:])
+    inner_verts = indices - outer_verts
+
+    edge_list = []
+    for i in outer_verts:
+        edge = MeshVert.create(loop.dagpath)
+        for idx, verts in edge_vert_map.viewitems():
+            if i in verts:
+                edge.add(verts); break
+        edge_list.append(edge)
+    return edge_list, MeshVert.create(loop.dagpath).add(inner_verts)
 
 
 class MeshEdge(SingleIndexComponent):
@@ -424,7 +473,7 @@ class MeshEdge(SingleIndexComponent):
     def vertices(self):
         if self._verts is None:
             get_vert = self.mesh.getEdgeVertices
-            self._verts = IndexDict({idx: get_vert(idx) for idx in self.indices})
+            self._verts = IndicesDict({idx: get_vert(idx) for idx in self.indices})
         return self._verts
 
 
@@ -438,7 +487,7 @@ class MeshPolygon(SingleIndexComponent):
     @property
     def normals(self):
         if self._normals is None:
-            self._normals = IndexDict(
+            self._normals = IndicesDict(
                 {idx: self.mesh.getPolygonNormal(idx) for idx in self.indices}
             )
         return self._normals
@@ -447,7 +496,7 @@ class MeshPolygon(SingleIndexComponent):
     def vertices(self):
         if self._verts is None:
             get_vert = self.mesh.getPolygonVertices
-            self._verts = IndexDict({idx: get_vert(idx) for idx in self.indices})
+            self._verts = IndicesDict({idx: get_vert(idx) for idx in self.indices})
         return self._verts
 
 
@@ -463,4 +512,9 @@ class MeshMap(SingleIndexComponent):
 
 
 if __name__ == '__main__':
-    pass
+    sl = api.MGlobal.getActiveSelectionList().getComponent(0)
+    comp = SingleIndexComponent(*sl)
+
+    print comp.bbox.center
+    print comp.bbox.center
+

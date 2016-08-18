@@ -11,6 +11,7 @@ from contextlib import contextmanager
 
 from maya import cmds
 
+import mampy
 from .masks import get_active_flags_in_mask, get_active_select_mode
 
 

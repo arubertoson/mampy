@@ -14,7 +14,6 @@ class AbstractDraggerCtx(object):
     :param \*\*kwargs: all optional parameters for draggerContext
     """
     __metaclass__ = ABCMeta
-
     _context_properties = [
         'image1', 'i1', 'i2', 'image2', 'image3',
         'i3', 'prePressCommand', 'ppc', 'holdCommand', 'hc',
@@ -23,11 +22,12 @@ class AbstractDraggerCtx(object):
         'cursor', 'cur', 'drawString', 'ds', 'undoMode', 'um',
         'stepsCount', 'sc', 'snapping', 'snp', 'currentStep', 'cs'
     ]
+    NAME = None
 
-    def __init__(self, name, **kwargs):
-        self.name = name
-        if not cmds.draggerContext(self.name, exists=True):
-            self.name = cmds.draggerContext(name)
+    def __init__(self, **kwargs):
+        self.name = self.NAME
+        if not cmds.draggerContext(self.NAME, exists=True):
+            self.name = cmds.draggerContext(self.NAME)
 
         cmds.draggerContext(
             self.name,

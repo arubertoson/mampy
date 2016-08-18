@@ -2,6 +2,8 @@
 """
 Module to store containers.
 """
+from __future__ import absolute_import, unicode_literals
+
 import logging
 from abc import ABCMeta, abstractmethod
 
@@ -9,8 +11,9 @@ from maya import cmds
 from maya.api import OpenMaya as api
 
 
-from mampy.comps import Component
-from mampy.nodes import DagNode, DependencyNode, Plug
+from mampy.core.components import SingleIndexComponent
+from mampy.core.dagnodes import Node, DependencyNode, Plug
+from mampy.core.exceptions import OrderedSelectionsNotSet
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +25,9 @@ class AbstractSelectionList(object):
         self._slist = api.MSelectionList()
         self._populate_list(elements, merge)
 
+    @abstractmethod
     def _populate_list(self, elements, merge):
-        if elements is not None:
-            if isinstance(elements, api.MSelectionList):
-                self._slist = self._slist.merge(elements)
-            else:
-                for element in elements:
-                    self._slist.add(element)
+        pass
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, str(self))
@@ -68,9 +67,11 @@ class AbstractSelectionList(object):
         return cls(cmds.ls(sl=True))
 
     @classmethod
-    def from_ls(cls, merge=False, *args, **kwargs):
-        if not merge:
-            merge = True if 'fl' in kwargs or 'flatten' in kwargs else False
+    def from_ls(cls, merge=True, *args, **kwargs):
+        if any(i in kwargs for i in ('fl', 'flatten', 'os', 'orderedSelection')):
+            if not cmds.selectPref(q=True, trackSelectionOrder=True):
+                raise OrderedSelectionsNotSet()
+            merge = False
         return cls(cmds.ls(*args, **kwargs), merge)
 
     def append(self, value):
@@ -102,11 +103,40 @@ class AbstractSelectionList(object):
     def remove(self, value):
         return self._slist.remove(value)
 
+    def cmdslist(self, index=None):
+        if index:
+            return self._slist.getSelectionStrings(index)
+        return self._slist.getSelectionStrings()
+
+
+def get_borders_from_complist(complist):
+    """Get border edges from selection and return a new selection list."""
+    border_edges = ComponentList()
+    for component in complist:
+        borders = component.new()
+        for index in component.indices:
+            if not component.is_border(index):
+                continue
+            borders.add(index)
+        if borders:
+            border_edges.append(borders)
+    return border_edges
+
 
 class ComponentList(AbstractSelectionList):
 
     def __init__(self, elements=None, merge=True):
         super(ComponentList, self).__init__(elements, merge)
+
+    def _populate_list(self, elements, merge):
+        if elements is not None:
+            if isinstance(elements, api.MSelectionList):
+                self._slist = self._slist.merge(elements)
+            else:
+                for element in elements:
+                    if isinstance(element, basestring):
+                        element = api.MSelectionList().add(element).getComponent(0)
+                    self._slist.add(element, merge)
 
     def __getitem__(self, key):
         if isinstance(key, slice):
@@ -114,10 +144,17 @@ class ComponentList(AbstractSelectionList):
                 [self._slist.getComponent(i) for i in xrange(*key.indices(len(self)))]
             )
         else:
-            return Component(self._slist.getComponent(key))
+            return SingleIndexComponent(*self._slist.getComponent(key))
 
     def __iter__(self):
-        return (Component(self._slist.getComponent(i)) for i in xrange(len(self)))
+        return (SingleIndexComponent(*self._slist.getComponent(i)) for i in xrange(len(self)))
+
+    def __nonzero__(self):
+        result = super(ComponentList, self).__nonzero__()
+        if result:
+            return not(all(type(obj) is SingleIndexComponent for obj in self))
+        else:
+            return result
 
     def __contains__(self, other):
         return self._slist.hasItemPartly(*other.node)
@@ -129,13 +166,27 @@ class ComponentList(AbstractSelectionList):
 class DagbaseList(AbstractSelectionList):
 
     def __init__(self, object, elements=None, merge=True):
-        super(DagbaseList, self).__init__(elements, merge)
         self._object = object
         self._get_func = {
-            DagNode: 'getDagPath',
+            Node: 'getDagPath',
             DependencyNode: 'getDependNode',
             Plug: 'getPlug',
         }[self._object]
+        super(DagbaseList, self).__init__(elements, merge)
+
+    def _populate_list(self, elements, merge):
+        if elements is not None:
+            if isinstance(elements, api.MSelectionList):
+                self._slist = self._slist.merge(elements)
+            else:
+                for element in elements:
+                    if isinstance(element, basestring):
+                        sl = api.MSelectionList().add(element)
+                        get = getattr(sl, self._get_func)
+                        element = get(0)
+                    elif isinstance(element, Node):
+                        element = element.dagpath
+                    self._slist.add(element, merge)
 
     def __iter__(self):
         get = getattr(self._slist, self._get_func)
@@ -165,7 +216,7 @@ class DagbaseList(AbstractSelectionList):
 
 class DagpathList(DagbaseList):
     def __init__(self, dagpath=None, merge=True):
-        super(DagpathList, self).__init__(DagNode, dagpath, merge)
+        super(DagpathList, self).__init__(Node, dagpath, merge)
 
 
 class DependencyList(DagbaseList):
@@ -177,3 +228,6 @@ class PlugList(DagbaseList):
     def __init__(self, dagpath=None, merge=True):
         super(PlugList, self).__init__(Plug, dagpath, merge)
 
+
+if __name__ == '__main__':
+    print ComponentList.from_ls(sl=True, fl=True)

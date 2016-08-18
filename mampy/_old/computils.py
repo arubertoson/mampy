@@ -21,13 +21,13 @@ logger = logging.getLogger(__file__)
 # logger.setLevel(logging.DEBUG)
 
 
-def get_border_loop_from_edge_index(index):
+def get_border_loop_indices_from_edge_index(index):
     return set(sorted([int(i) for i in cmds.polySelect(q=True, edgeBorder=index)]))
 
 
-def get_border_loop_from_edge(component):
+def get_border_loop_indices_from_edge_component(component):
     return set([
-        tuple(border for border in get_border_loop_from_edge_index(idx))
+        tuple(border for border in get_border_loop_indices_from_edge_index(idx))
         for idx in component.indices
     ])
 

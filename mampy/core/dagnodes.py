@@ -18,6 +18,22 @@ import collections
 
 from maya import cmds
 import maya.api.OpenMaya as api
+from maya.api.OpenMaya import MFn
+
+
+def cached(func):
+    " Used on methods to convert them to methods that replace themselves\
+        with their return value once they are called. "
+
+    cached = {}
+    def cache(*args):
+        if args in cached:
+            return cached[args]
+        else:
+            rv = func(*args)
+            cached[args] = rv
+            return rv
+    return cache
 
 
 def get_dagpath_from_string(input_string):
@@ -26,6 +42,45 @@ def get_dagpath_from_string(input_string):
 
 def get_dependency_from_string(input_string):
     return api.MSelectionList().add(input_string).getDependNode(0)
+
+
+class NodeAttributes(collections.MutableMapping):
+
+    def __init__(self, iterable=None):
+        self.elements = {}
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return str(self.elements.keys())
+
+    def __iter__(self):
+        return iter(self.elements)
+
+    def __len__(self):
+        return len(self.elements)
+
+    def __getitem__(self, name):
+        return self.elements[name].get()
+
+    def __setitem__(self, name, value):
+        if name in self.elements:
+            self.elements[name].set(value)
+        else:
+            self.elements[name] = value
+
+    def __delitem__(self, name):
+        del self.elements[name]
+
+    def plug(self, name):
+        return self.elements[name]
+
+    def connect(self, name, other):
+        return self.elements[name].connect(other)
+
+    def disconnect(self, name, other):
+        return self.elements[name].disconnect(other)
 
 
 class Plug(object):
@@ -79,7 +134,7 @@ class Plug(object):
 class AbstractNode(object):
 
     def __init__(self):
-        self._attributes = None
+        self._attr = NodeAttributes()
 
     def __repr__(self):
         return '{}({!r})'.format(self.__class__.__name__, str(self))
@@ -87,21 +142,16 @@ class AbstractNode(object):
     def __str__(self):
         return '{}'.format(self._mfnnode.fullPathName())
 
-    def __getattr__(self, key):
-        if key in self.attributes:
-            return self.get_plug(key).get()
-
-    def __setattr__(self, key, value):
-        if key == '_attributes':
-            return super(AbstractNode, self).__setattr__(key, value)
-
-        if key in self.attributes:
-            self.get_plug(key).set(value)
-        else:
-            super(AbstractNode, self).__setattr__(key, value)
-
-    __getitem__ = __getattr__
-    __setitem__ = __setattr__
+    @property
+    def attr(self):
+        attr_list = self.attributes() - set(self._attr.keys())
+        if attr_list:
+            for name in attr_list:
+                try:
+                    self._attr[name] = self.get_plug(name)
+                except AttributeError:
+                    continue
+        return self._attr
 
     def get_plug(self, name):
         """
@@ -115,26 +165,11 @@ class AbstractNode(object):
             raise AttributeError('{} object has no attribute "{}"'.format(
                                  self.__class__.__name__, name))
 
-    @property
     def attributes(self):
-        if self._attributes is None:
-            shortnames = cmds.listAttr(str(self), shortNames=True)
-            longnames = cmds.listAttr(str(self))
-            self._attributes = set(shortnames + longnames)
-        return self._attributes
-
-
-class CleanSetAttrMeta(type):
-    def __call__(cls, *args, **kwargs):
-        real_setattr = cls.__setattr__
-        cls.__setattr__ = object.__setattr__
-        self = super(CleanSetAttrMeta, cls).__call__(*args, **kwargs)
-        cls.__setattr__ = real_setattr
-        return self
+        return set(cmds.listAttr(str(self), shortNames=True) + cmds.listAttr(str(self)))
 
 
 class DependencyNode(AbstractNode):
-    __metaclass__ = CleanSetAttrMeta
 
     def __init__(self, dagpath):
         super(DependencyNode, self).__init__()
@@ -179,23 +214,17 @@ class DependencyNode(AbstractNode):
         return self._plugs
 
     def exists(self):
-        return cmds.objectExists(str(self))
+        return cmds.objExists(str(self))
 
 
 class Node(AbstractNode):
-    __metaclass__ = CleanSetAttrMeta
 
     def __new__(cls, dagpath, object=None):
         if isinstance(dagpath, basestring):
             dagpath = get_dagpath_from_string(dagpath)
 
-        try:
-            shape = api.MDagPath.getAPathTo(dagpath.child(0))
-        except (RuntimeError, AttributeError):
-            shape = dagpath
-
         for c in cls.__subclasses__():
-            if c.__name__.lower() == cmds.nodeType(str(shape)):
+            if c._mtype == dagpath.apiType():
                 return super(Node, cls).__new__(c, dagpath, object)
         return super(Node, cls).__new__(cls, dagpath, object)
 
@@ -206,10 +235,8 @@ class Node(AbstractNode):
             dagpath = get_dagpath_from_string(dagpath)
 
         self._dagpath = dagpath
-        try:
-            self._mfnnode = object(dagpath)
-        except TypeError:
-            self._mfnnode = object(self.mobject)
+        self._mfnnode = api.MFnDagNode(dagpath) if object is None else object(dagpath)
+        self._mfntransform = None
 
     def __eq__(self, other):
         return self._dagpath == other._dagpath
@@ -230,6 +257,14 @@ class Node(AbstractNode):
         return self._mfnnode.hasChild(mobject)
 
     @property
+    def dagpath(self):
+        return self._dagpath
+
+    @property
+    def short_name(self):
+        return self.node.partialPathName()
+
+    @property
     def bbox(self):
         return self._mfnnode.boundingBox
 
@@ -248,9 +283,22 @@ class Node(AbstractNode):
     @property
     def shape(self):
         try:
-            return self.__class__(self._dagpath.extendToShape(0))
+            return Node(self._dagpath.extendToShape(0))
         except RuntimeError:
             return None
+
+    @property
+    def transform(self):
+        """
+        Return the closest transform node from the given dagpath.
+        """
+        if isinstance(self.__class__, Transform):
+            return self
+        else:
+            if self._mfntransform is None:
+                self._mfntransform = Transform(self._dagpath.getAPathTo(
+                                               self._dagpath.transform()))
+            return self._mfntransform
 
     @property
     def type(self):
@@ -258,11 +306,11 @@ class Node(AbstractNode):
 
     @property
     def typestr(self):
-        return cmds.nodeType(str(self))
+        return self.mobject.apiTypeStr
 
     @classmethod
     def from_mobject(cls, object):
-        return cls(api.MDagPath.getAPathTo(object))
+        return Node(api.MDagPath.getAPathTo(object))
 
     def get_child(self, index=0):
         """
@@ -270,7 +318,7 @@ class Node(AbstractNode):
         in list.
         """
         try:
-            return self.from_object(self._mfnnode.child(index))
+            return self.from_mobject(self._mfnnode.child(index))
         except RuntimeError:
             return None
 
@@ -280,15 +328,9 @@ class Node(AbstractNode):
         first in list.
         """
         try:
-            return self.from_object(self._mfnnode.parent(index))
+            return self.from_mobject(self._mfnnode.parent(index))
         except RuntimeError:
             return None
-
-    def get_transform(self):
-        """
-        Return the closest transform node from the given dagpath.
-        """
-        return Transform(self._dagpath.getAPathTo(self._dagpath.transform()))
 
     def is_child_of(self, other):
         return self._mfnnode.hasParent(other.mobject)
@@ -305,14 +347,14 @@ class Node(AbstractNode):
         Iterates over the :class:`DagNode` ``api.OpenMaya.MObject`` children.
         """
         for idx in xrange(self._mfnnode.childCount()):
-            yield self.from_object(self._mfnnode.child(idx))
+            yield self.from_mobject(self._mfnnode.child(idx))
 
     def iterparents(self):
         """
         Iterates over the :class:`DagNode` ``api.OpenMaya.MObject`` parents.
         """
         for idx in xrange(self._mfnnode.parentCount()):
-            yield self.from_object(self._mfnnode.parent(idx))
+            yield self.from_mobject(self._mfnnode.parent(idx))
 
     def set_parent(self, other, **kwargs):
         """
@@ -326,15 +368,17 @@ class Node(AbstractNode):
             to write an undo function of some kind.
         """
         if isinstance(other, basestring):
-            n = cmds.parent(self.name, other, **kwargs)[0]
+            n = cmds.parent(str(self), other, **kwargs)[0]
         elif other is None or other.type == api.MFn.kWorld:
-            n = cmds.parent(self.name, world=True, **kwargs)[0]
+            n = cmds.parent(str(self), world=True, **kwargs)[0]
         else:
-            n = cmds.parent(self.name, other.name, **kwargs)[0]
+            n = cmds.parent(str(self), str(other), **kwargs)[0]
         return self.__class__(n)
 
 
 class Camera(Node):
+
+    _mtype = MFn.kCamera
 
     def __init__(self, dagpath):
         super(Camera, self).__init__(dagpath, api.MFnCamera)
@@ -357,7 +401,7 @@ def _space(kspace):
 
 
 class Transform(Node):
-
+    _mtype = MFn.kTransform
     Transforms = collections.namedtuple('Transforms', 'translate rotate scale')
 
     def __init__(self, dagpath):
@@ -393,5 +437,4 @@ class Transform(Node):
 
 
 if __name__ == '__main__':
-    persp = DependencyNode('polyBevel1')
-    print str(persp)
+    pass
