@@ -39,7 +39,7 @@ class AbstractSelectionList(object):
         return self._slist.length()
 
     def __eq__(self, other):
-        return list(self) == list(other)
+        return set(self.cmdslist()) == set(other.cmdslist())
 
     def __ne__(self, other):
         return not self.__eq__(other)
