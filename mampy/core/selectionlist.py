@@ -67,11 +67,15 @@ class AbstractSelectionList(object):
         return cls(cmds.ls(sl=True))
 
     @classmethod
-    def from_ls(cls, merge=True, *args, **kwargs):
+    def from_ls(cls, *args, **kwargs):
+        merge = True
         if any(i in kwargs for i in ('fl', 'flatten', 'os', 'orderedSelection')):
             if not cmds.selectPref(q=True, trackSelectionOrder=True):
                 raise OrderedSelectionsNotSet()
             merge = False
+
+        if 'merge' in kwargs:
+            merge = kwargs['merge']
         return cls(cmds.ls(*args, **kwargs), merge)
 
     def append(self, value):
