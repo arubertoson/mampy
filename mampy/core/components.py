@@ -310,7 +310,7 @@ class SingleIndexComponent(AbstractComponent):
         Check if component index is on border of mesh.
         """
         if self.type == api.MFn.kMeshPolygonComponent:
-            return self.mesh.onBoundary(self.to_face().index)
+            return self.mesh.onBoundary(index)
         elif self.type == api.MFn.kMeshEdgeComponent:
             return cmds.polySelect(self.dagpath, q=True, edgeBorder=index, ns=True) or False
         else:
@@ -364,7 +364,20 @@ class SingleIndexComponent(AbstractComponent):
         return self.convert_to(MFn.kMeshVertComponent, **kwargs)
 
     def to_edge(self, **kwargs):
-        return self.convert_to(MFn.kMeshEdgeComponent, **kwargs)
+        converted = self.convert_to(MFn.kMeshEdgeComponent, **kwargs)
+        # When converting to borders from mesh to face, if the face is at mesh
+        # border the edges won't be returned. We perform a manual convert
+        # and add the missing edges to the converted object.
+        if self.is_face() and 'border' in kwargs:
+            border_edges = []
+            for face in self:
+                if self.is_border(face):
+                    n_edge = self.new().add(face).to_edge()
+                    for idx in n_edge:
+                        if n_edge.is_border(idx):
+                            border_edges.append(idx)
+            converted.add(border_edges)
+        return converted
 
     def to_face(self, **kwargs):
         return self.convert_to(MFn.kMeshPolygonComponent, **kwargs)
