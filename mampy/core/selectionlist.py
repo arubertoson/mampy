@@ -226,7 +226,7 @@ class DagbaseList(AbstractSelectionList):
             return self._object(getattr(self._slist, self._get_func)(key))
 
     def __contains__(self, other):
-        return self._slist.hasItem(other)
+        return self._slist.hasItem(other.dagpath)
 
     @classmethod
     def from_name(cls, name):
