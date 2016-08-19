@@ -90,8 +90,12 @@ class AbstractSelectionList(object):
     def clear(self):
         return self._slist.clear()
 
-    def extend(self, other, strategy=api.MSelectionList.kMergeNormal):
-        self._slist.merge(other._slist, strategy)
+    def extend(self, other, merge=True, strategy=api.MSelectionList.kMergeNormal):
+        if isinstance(other, (self.__class__, api.MSelectionList)):
+            self._slist.merge(other._slist, strategy)
+        else:
+            for each in other:
+                self._slist.add(each.node, mergeWithExisting=merge)
 
     def pop(self, index=None):
         index = len(self)-1 if index is None else index
