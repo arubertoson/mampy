@@ -14,6 +14,7 @@ from maya.api.OpenMaya import MFn
 
 from mampy.core.utils import IndicesDict, ObjectDict, get_average_vert_normal
 from mampy.core.datatypes import BoundingBox
+from mampy.core.dagnodes import Node
 
 
 logger = logging.getLogger(__name__)
@@ -102,6 +103,7 @@ class SingleIndexComponent(AbstractComponent):
         super(SingleIndexComponent, self).__init__(dagpath, object)
         self._indexed = self._indexed_class(self.object)
 
+        self.mdag = Node(dagpath)
         self._verts = None
         self._map_shells = {}
         self._mesh_shells = {}
