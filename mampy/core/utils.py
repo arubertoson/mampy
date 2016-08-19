@@ -14,10 +14,10 @@ class IndicesDict(dict):
     Container object for points bound by dictionary
     """
     def __iter__(self):
-        return iter(set(sum(self.itervalues(), ())))
+        return iter(set(itertools.chain(*self.itervalues())))
 
     def __contains__(self, key):
-        return key in self.values()
+        return key in iter(self)
 
     def has_index(self, index):
         return index in self.keys()
