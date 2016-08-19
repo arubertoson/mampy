@@ -463,10 +463,10 @@ class MeshEdge(SingleIndexComponent):
 
             get_edge_verts = self.mesh.getEdgeVertices
             get_vert_normals = self.vert_normals[self.space]
-            self._normals[self.space] = {
+            self._normals[self.space] = ObjectDict({
                 idx: get_average_vert_normal(get_vert_normals, get_edge_verts(idx))
                 for idx in self.indices
-            }
+            })
         return self._normals[self.space]
 
     @property
@@ -486,8 +486,8 @@ class MeshPolygon(SingleIndexComponent):
 
     @property
     def normals(self):
-        if self._normals is None:
-            self._normals = IndicesDict(
+        if not self._normals:
+            self._normals = ObjectDict(
                 {idx: self.mesh.getPolygonNormal(idx) for idx in self.indices}
             )
         return self._normals
@@ -496,7 +496,7 @@ class MeshPolygon(SingleIndexComponent):
     def vertices(self):
         if self._verts is None:
             get_vert = self.mesh.getPolygonVertices
-            self._verts = IndicesDict({idx: get_vert(idx) for idx in self.indices})
+            self._verts = IndicesDict({idx: tuple(get_vert(idx)) for idx in self.indices})
         return self._verts
 
 
