@@ -1,12 +1,19 @@
-
-import maya.api.OpenMaya as api
+"""
+"""
+import itertools
 
 
 def get_average_vert_normal(normals, *args):
-    vec = api.MVector()
+    try:
+        cls = normals[0].__class__
+    except KeyError:
+        cls = next(iter(normals)).__class__
+
+    object = cls()
+    args = args[0] if len(args) == 1 else args
     for v in args:
-        vec += normals[v]
-    return vec / len(args)
+        object += normals[v]
+    return object / len(args)
 
 
 class IndicesDict(dict):
