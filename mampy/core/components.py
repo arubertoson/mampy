@@ -210,7 +210,7 @@ class SingleIndexComponent(AbstractComponent):
             else:
                 wanted = set([array[idx] for idx in self.indices])
 
-            self._map_shells = collections.defaultdict(set)
+            self._map_shells = {idx: self.new() for idx in wanted}
             for idx, element in enumerate(array):
                 if element not in wanted:
                     continue
@@ -552,7 +552,4 @@ class MeshMap(SingleIndexComponent):
 if __name__ == '__main__':
     sl = api.MGlobal.getActiveSelectionList().getComponent(0)
     comp = SingleIndexComponent(*sl)
-
-    print comp.bbox.center
-    print comp.bbox.center
 
