@@ -458,6 +458,29 @@ def get_outer_and_inner_edges_from_edge_loop(loop):
     return edge_list, MeshVert.create(loop.dagpath).add(inner_verts)
 
 
+def get_vert_order_from_connected_edges(edge_vertices):
+    """
+    .. note:: Should probably be moved to mampy.
+    """
+    idx = 0
+    next_ = None
+    sorted_ = []
+    while edge_vertices:
+
+        edge = edge_vertices.pop(idx)
+        # next_ is a vert on the edge index.
+        if next_ is None:
+            next_ = edge[-1]
+
+        sorted_.append(next_)
+        for i in edge_vertices:
+            if next_ in i:
+                idx = edge_vertices.index(i)
+                next_ = i[-1] if next_ == i[0] else i[0]
+                break
+    return sorted_
+
+
 class MeshEdge(SingleIndexComponent):
     _mtype = MFn.kMeshEdgeComponent
 
