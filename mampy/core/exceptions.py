@@ -24,3 +24,7 @@ class InvalidComponentSelection(AbstractException):
 
 class OrderedSelectionsNotSet(AbstractException):
     """Ordered selection not set in Maya preferences."""
+
+
+class ObjecetDoesNotExist(AbstractException):
+    """Could not find wanted object in scene."""
