@@ -21,21 +21,6 @@ import maya.api.OpenMaya as api
 from maya.api.OpenMaya import MFn
 
 
-def cached(func):
-    " Used on methods to convert them to methods that replace themselves\
-        with their return value once they are called. "
-
-    cached = {}
-    def cache(*args):
-        if args in cached:
-            return cached[args]
-        else:
-            rv = func(*args)
-            cached[args] = rv
-            return rv
-    return cache
-
-
 def get_dagpath_from_string(input_string):
     return api.MSelectionList().add(input_string).getDagPath(0)
 
