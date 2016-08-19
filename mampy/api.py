@@ -8,7 +8,8 @@ from __future__ import absolute_import, unicode_literals
 
 from .core.dagnodes import Node, DependencyNode
 from .core.components import SingleIndexComponent, get_component_from_string
-from .core.selectionlist import ComponentList, DagpathList, DependencyList, PlugList
+from .core.selectionlist import (ComponentList, MultiComponentList, DagpathList,
+                                 DependencyList, PlugList)
 
 
 def _get_dagpath_list_from_type(list_object, *args, **kwargs):
@@ -19,6 +20,10 @@ def _get_dagpath_list_from_type(list_object, *args, **kwargs):
     elif args and isinstance(args[0], (tuple, list, set)):
         return list_object(args[0])
     return list_object.from_ls(*args, **kwargs)
+
+
+def multicomplist():
+    return MultiComponentList.from_selection()
 
 
 def complist(*args, **kwargs):

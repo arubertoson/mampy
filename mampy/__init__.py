@@ -35,6 +35,7 @@ __license__ = 'MIT'
 
 
 from mampy.api import (complist,
+                       multicomplist,
                        daglist,
                        dependlist,
                        pluglist,

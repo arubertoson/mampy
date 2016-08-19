@@ -163,6 +163,25 @@ class ComponentList(AbstractSelectionList):
         return self._slist.toggle(*component)
 
 
+class MultiComponentList(ComponentList):
+
+    def __init__(self, elements=None, merge=True):
+        super(MultiComponentList, self).__init__(elements, merge)
+
+    def _sort_elements(self, elements):
+        import collections
+        multi_map = collections.defaultdict(set)
+        for element in elements:
+            obj, _ = element.split('[')
+            multi_map[obj].add(element)
+        return multi_map
+
+    def _populate_list(self, elements, merge):
+        if elements is not None:
+            for elements in self._sort_elements(elements).itervalues():
+                self.append(ComponentList(elements).pop())
+
+
 class DagbaseList(AbstractSelectionList):
 
     def __init__(self, object, elements=None, merge=True):
@@ -230,4 +249,4 @@ class PlugList(DagbaseList):
 
 
 if __name__ == '__main__':
-    print ComponentList.from_ls(sl=True, fl=True)
+    print MultiComponentList(cmds.ls(sl=True))
