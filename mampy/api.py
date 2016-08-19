@@ -6,20 +6,27 @@ This module implements the Mampy API.
 """
 from __future__ import absolute_import, unicode_literals
 
-from .core.dagnodes import Node, DependencyNode
-from .core.components import SingleIndexComponent, get_component_from_string
-from .core.selectionlist import (ComponentList, MultiComponentList, DagpathList,
-                                 DependencyList, PlugList)
+from mampy.core.dagnodes import Node, DependencyNode
+from mampy.core.components import SingleIndexComponent, get_component_from_string
+from mampy.core.selectionlist import (ComponentList, MultiComponentList, DagpathList,
+                                      DependencyList, PlugList)
 
 
 def _get_dagpath_list_from_type(list_object, *args, **kwargs):
     if not args and not kwargs:
         return list_object.from_selection()
-    elif args and isinstance(args[0], basestring):
+
+    elif args and isinstance(args[0], basestring) and not kwargs:
         return list_object.from_name(args[0])
+
+    elif args and kwargs:
+        return list_object.from_ls(*args, **kwargs)
+
+    elif kwargs:
+        return list_object.from_ls(**kwargs)
+
     elif args and isinstance(args[0], (tuple, list, set)):
         return list_object(args[0])
-    return list_object.from_ls(*args, **kwargs)
 
 
 def multicomplist():
