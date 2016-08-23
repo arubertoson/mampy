@@ -92,7 +92,10 @@ class AbstractSelectionList(object):
 
     def extend(self, other, merge=True, strategy=api.MSelectionList.kMergeNormal):
         if isinstance(other, (self.__class__, api.MSelectionList)):
-            self._slist.merge(other._slist, strategy)
+            try:
+                self._slist.merge(other._slist, strategy)
+            except RuntimeError:
+                pass
         else:
             for each in other:
                 self._slist.add(each.node, mergeWithExisting=merge)
