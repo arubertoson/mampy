@@ -78,11 +78,14 @@ class AbstractSelectionList(object):
             merge = kwargs['merge']
         return cls(cmds.ls(*args, **kwargs), merge)
 
-    def append(self, value):
-        if isinstance(value, basestring):
-            self._slist.add(value)
+    def append(self, other):
+        if isinstance(other, basestring):
+            self._slist.add(other)
         else:
-            self._slist.add(value.dagpath, mergeWithExisting=False)
+            try:
+                self._slist.add(other.node, mergeWithExisting=False)
+            except ValueError:
+                self._slist.add(other.dagpath, mergeWithExisting=False)
 
     def copy(self):
         return self.__class__(api.MSelectionList().copy(self._slist))
@@ -257,7 +260,3 @@ class DependencyList(DagbaseList):
 class PlugList(DagbaseList):
     def __init__(self, dagpath=None, merge=True):
         super(PlugList, self).__init__(Plug, dagpath, merge)
-
-
-if __name__ == '__main__':
-    print MultiComponentList(cmds.ls(sl=True))
