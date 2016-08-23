@@ -34,4 +34,12 @@ __version__ = '0.1.1'
 __license__ = 'MIT'
 
 
-from mampy.api import *
+from mampy.api import (complist,
+                       multicomplist,
+                       daglist,
+                       dependlist,
+                       pluglist,
+                       get_single_index_component,
+                       get_node,
+                       get_depend_node,)
+from mampy._old.api import *
