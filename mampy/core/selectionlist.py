@@ -82,7 +82,7 @@ class AbstractSelectionList(object):
         if isinstance(value, basestring):
             self._slist.add(value)
         else:
-            self._slist.add(value.node, mergeWithExisting=False)
+            self._slist.add(value.dagpath, mergeWithExisting=False)
 
     def copy(self):
         return self.__class__(api.MSelectionList().copy(self._slist))
