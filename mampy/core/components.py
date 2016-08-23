@@ -52,9 +52,9 @@ class AbstractComponent(object):
             else:
                 return super(AbstractComponent, cls).__new__(cls, dagpath, object)
 
-    def __init__(self, dagpath, object):
+    def __init__(self, dagpath, mobject):
         self.dagpath = dagpath
-        self.object = object
+        self.mobject = mobject
 
         self._mesh = None
 
@@ -63,6 +63,10 @@ class AbstractComponent(object):
         if self._mesh is None:
             self._mesh = api.MFnMesh(self.dagpath)
         return self._mesh
+
+    @property
+    def node(self):
+        return (self.dagpath, self.mobject)
 
     @classmethod
     def create(cls, dagpath, comptype=None):
@@ -99,9 +103,9 @@ class AbstractComponent(object):
 class SingleIndexComponent(AbstractComponent):
     _indexed_class = api.MFnSingleIndexedComponent
 
-    def __init__(self, dagpath, object=None):
-        super(SingleIndexComponent, self).__init__(dagpath, object)
-        self._indexed = self._indexed_class(self.object)
+    def __init__(self, dagpath, mobject=None):
+        super(SingleIndexComponent, self).__init__(dagpath, mobject)
+        self._indexed = self._indexed_class(self.mobject)
 
         self.mdag = Node(dagpath)
         self._verts = None
@@ -118,7 +122,7 @@ class SingleIndexComponent(AbstractComponent):
         return '{}({})'.format(self.__class__.__name__, str(self))
 
     def __str__(self):
-        if self.object is None or self.object.isNull():
+        if self.mobject is None or self.mobject.isNull():
             return '{}({})'.format(self.__class__.__name__, self.dagpath.partialPathName())
         else:
             return '{}.{}({})'.format(self.dagpath.partialPathName(),
@@ -144,7 +148,7 @@ class SingleIndexComponent(AbstractComponent):
         return not self.__eq__(other)
 
     def __nonzero__(self):
-        if self.object is None or self.object.isNull():
+        if self.mobject is None or self.mobject.isNull():
             return False
         else:
             return True if len(self) else False
@@ -174,10 +178,6 @@ class SingleIndexComponent(AbstractComponent):
     @property
     def indices(self):
         return self._indexed.getElements()
-
-    @property
-    def node(self):
-        return (self.dagpath, self.object)
 
     @property
     def points(self):
@@ -245,7 +245,7 @@ class SingleIndexComponent(AbstractComponent):
 
     @property
     def typestr(self):
-        return self.object.apiTypeStr
+        return self.mobject.apiTypeStr
 
     def get_complete(self):
         count = {
@@ -256,7 +256,7 @@ class SingleIndexComponent(AbstractComponent):
         }[self.type]
         complete = self.new()
         complete._indexed.setCompleteData(count)
-        return self.__class__(self.dagpath, complete.object)
+        return self.__class__(self.dagpath, complete.mobject)
 
     def get_connected_components(self, convert=True):
         """Return connected vertices from self."""
@@ -330,7 +330,7 @@ class SingleIndexComponent(AbstractComponent):
 
     def is_valid(self, comptype=None):
         if comptype is None:
-            return not(self.object.isNull())
+            return not(self.mobject.isNull())
         return self.type == comptype
 
     def is_face(self):
@@ -404,7 +404,7 @@ class SingleIndexComponent(AbstractComponent):
             else:
                 return logger.warn('{} is not same component.'.format(other))
         sl = api.MSelectionList().add(self.node)
-        sl.toggle(self.dagpath, component.object)
+        sl.toggle(self.dagpath, component.mobject)
         return self.__class__(*sl.getComponent(0))
 
 
@@ -484,8 +484,8 @@ def get_vert_order_from_connected_edges(edge_vertices):
 class MeshEdge(SingleIndexComponent):
     _mtype = MFn.kMeshEdgeComponent
 
-    def __init__(self, dagpath, object=None):
-        super(MeshEdge, self).__init__(dagpath, object)
+    def __init__(self, dagpath, mobject=None):
+        super(MeshEdge, self).__init__(dagpath, mobject)
         self._vert_normals = {}
 
     @classmethod
@@ -547,9 +547,3 @@ class MeshMap(SingleIndexComponent):
 
     def translate(cls, **kwargs):
         cmds.polyEditUV(list(cls), **kwargs)
-
-
-if __name__ == '__main__':
-    sl = api.MGlobal.getActiveSelectionList().getComponent(0)
-    comp = SingleIndexComponent(*sl)
-
