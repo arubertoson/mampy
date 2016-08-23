@@ -108,11 +108,11 @@ class AbstractSelectionList(object):
 
     __delitem__ = pop
 
-    def replace(self, value, other):
-        return self._slist.replace(value, other)
+    def replace(self, index, other):
+        return self._slist.replace(index, other)
 
-    def remove(self, value):
-        return self._slist.remove(value)
+    def remove(self, index):
+        return self._slist.remove(index)
 
     def cmdslist(self, index=None):
         if index:
