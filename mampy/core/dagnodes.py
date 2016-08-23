@@ -160,6 +160,8 @@ class DependencyNode(AbstractNode):
         super(DependencyNode, self).__init__()
         if isinstance(dagpath, basestring):
             dagobject = get_dependency_from_string(dagpath)
+        else:
+            dagobject = dagpath
 
         self.dagpath = dagpath
         self._mfnnode = api.MFnDependencyNode(dagobject)
@@ -419,7 +421,3 @@ class Transform(Node):
         if isinstance(point, api.MVector):
             point = api.MPoint(point)
         cmds.xform(self._dagpath, pivots=list(point)[:3], **_space(space))
-
-
-if __name__ == '__main__':
-    pass
