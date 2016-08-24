@@ -30,7 +30,7 @@ For more examples see documentation at <http://readthedocs.com>.
 __author__ = 'Marcus Albertsson <marcus.arubertoson@gmail.com>'
 __copyright__ = 'Copyright 2016 Marcus Albertsson'
 __url__ = 'http://github.com/arubertoson/maya-mampy'
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 __license__ = 'MIT'
 
 
