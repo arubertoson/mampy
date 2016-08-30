@@ -34,7 +34,7 @@ class AbstractDraggerCtx(object):
             pressCommand=self.press,
             dragCommand=self.drag,
             releaseCommand=self.release,
-            inz=self.setup,
+            inz=self.execute,
             fnz=self.tear_down,
             **kwargs
         )
@@ -69,7 +69,7 @@ class AbstractDraggerCtx(object):
             return 0
 
     @abstractmethod
-    def setup(self):
+    def execute(self):
         """
         Run on tool start.
         """
@@ -162,7 +162,7 @@ class AbstractDraggerCtx(object):
         """
         cmds.undoInfo(closeChunk=True)
 
-    def run(self):
+    def set_context(self):
         """
         Start tool.
         """
