@@ -61,6 +61,15 @@ if ContextDecorator is None:
 
 
 @contextmanager
+def restore_context():
+    ctx = cmds.currentCtx()
+    try:
+        yield
+    finally:
+        cmds.setToolTo(ctx)
+
+
+@contextmanager
 def object_mode():
     """
     Perform a task in object mode then restores mode to previous.

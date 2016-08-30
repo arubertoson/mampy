@@ -1,7 +1,7 @@
 """
 """
 import functools
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 from maya import cmds
 
@@ -13,7 +13,6 @@ class AbstractDraggerCtx(object):
     :param name: string name of context.
     :param \*\*kwargs: all optional parameters for draggerContext
     """
-    __metaclass__ = ABCMeta
     _context_properties = [
         'image1', 'i1', 'i2', 'image2', 'image3',
         'i3', 'prePressCommand', 'ppc', 'holdCommand', 'hc',
