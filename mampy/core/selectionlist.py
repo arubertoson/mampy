@@ -84,7 +84,7 @@ class AbstractSelectionList(object):
         else:
             try:
                 self._slist.add(other.node, mergeWithExisting=False)
-            except ValueError:
+            except (TypeError, ValueError):
                 self._slist.add(other.dagpath, mergeWithExisting=False)
 
     def copy(self):
