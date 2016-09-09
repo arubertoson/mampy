@@ -5,7 +5,7 @@ from PySide import QtGui
 from maya import cmds
 from maya import OpenMaya as oapi
 
-from mampy.packages.mvp import Viewport
+from mampy.lib.mvp import Viewport
 from mampy.utils.decorators import object_mode, select_keep
 
 

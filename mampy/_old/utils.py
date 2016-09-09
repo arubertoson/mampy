@@ -22,8 +22,8 @@ import maya.OpenMaya as _oldapi
 from PySide import QtGui
 
 import mampy
-from mampy.packages import profilehooks, mvp, pathlib
-from mampy.packages.pathlib import Path
+from mampy.lib import profilehooks, mvp, pathlib2
+from mampy.lib.pathlib2 import Path
 
 
 __all__ = ['script_job_exists', 'get_outliner_index', 'undoable', 'repeatable',

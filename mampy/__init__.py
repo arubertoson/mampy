@@ -25,15 +25,9 @@ For more examples see documentation at <http://readthedocs.com>.
 
 :copyright: (c) 2016 Marcus Albertsson.
 :license: MIT, see LICENSE for more details.
+
 """
-
-__author__ = 'Marcus Albertsson <marcus.arubertoson@gmail.com>'
-__copyright__ = 'Copyright 2016 Marcus Albertsson'
-__url__ = 'http://github.com/arubertoson/maya-mampy'
-__version__ = '0.2.0'
-__license__ = 'MIT'
-
-
+import logging
 from mampy.api import (complist,
                        multicomplist,
                        daglist,
@@ -43,3 +37,11 @@ from mampy.api import (complist,
                        get_node,
                        get_depend_node,)
 from mampy._old.api import *
+
+log = logging.getLogger(__name__)
+
+__author__ = 'Marcus Albertsson <marcus.arubertoson@gmail.com>'
+__copyright__ = 'Copyright 2016 Marcus Albertsson'
+__url__ = 'http://github.com/arubertoson/maya-mampy'
+__version__ = '0.2.0'
+__license__ = 'MIT'
