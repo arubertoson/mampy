@@ -1,157 +1,63 @@
 """
 This module implements the Mampy API.
 
-:copyright: (c) 2015 by Marcus Albertsson
+:copyright: (c) 2016 by Marcus Albertsson
 :license: MIT, see LICENSE for more details.
-
 """
-from mampy.dgcontainers import SelectionList, SelectionMask, OptionVar, MelGlobals
-from mampy.dgcomps import Component
-from mampy.dgnodes import DagNode
+from __future__ import absolute_import, unicode_literals
 
-__all__ = ['selected', 'ls', 'ordered_selection', 'get_node', 'get_component',
-           'optionVar', 'mel_globals', 'get_active_mask']
-
-
-def selected():
-    """
-    Constructs and return a :class:`.SelectionList` from
-    MGlobal.getActiveSelectionList()
-
-    :rtype: :class:`.SelectionList`
-    """
-    return SelectionList.from_selection()
+from mampy.core.dagnodes import Node, DependencyNode
+from mampy.core.components import SingleIndexComponent, get_component_from_string
+from mampy.core.selectionlist import (ComponentList, MultiComponentList, DagpathList,
+                                      DependencyList, PlugList)
 
 
-def ls(*args, **kwargs):
-    """
-    Constructs and return a :class:`.SelectionList` from given args,
-    kwargs.
+def _get_dagpath_list_from_type(list_object, *args, **kwargs):
+    if not args and not kwargs:
+        return list_object.from_selection()
 
-    Supports all parameters that cmds.ls have.
+    elif args and isinstance(args[0], basestring) and not kwargs:
+        return list_object.from_name(args[0])
 
-    :param \*args: dagpath or dagpath list.
-    :param \*\*kwargs: Optional arguments that ``ls`` takes.
-    :rtype: :class:`.SelectionList`
+    elif args and kwargs:
+        return list_object.from_ls(*args, **kwargs)
 
-    Usage::
+    elif kwargs:
+        return list_object.from_ls(**kwargs)
 
-        >>> import mampy
-        >>> slist = mampy.ls(sl=True, dag=True, type='mesh')
-        SelectionList([u'pCubeShape1', u'pCubeShape2'])
-    """
-    return SelectionList.from_ls(*args, **kwargs)
+    elif args and isinstance(args[0], (tuple, list, set)):
+        return list_object(args[0])
 
 
-def ordered_selection(slice_start=None, slice_stop=None, slice_step=None,
-                      **kwargs):
-    """
-    Constructs and return an ordered :class:`.SelectionList`.
+def multicomplist():
+    return MultiComponentList.from_selection()
 
-    :param slice_start: Where the slice starts from.
-    :param slice_stop: Where the slice stops.
-    :param slice_step: steps.
-    :param \*\*kwargs: Optional arguments that ``ls`` takes.
-    :rtype: :class:`.SelectionList`
 
-    Usage::
+def complist(*args, **kwargs):
+    return _get_dagpath_list_from_type(ComponentList, *args, **kwargs)
 
-        >>> import mampy
-        >>> cmds.ls(sl=True)
-        [u'pCube3', u'pCube2', u'pCube4', u'pCube1']
-        >>> slist = mampy.ordered_selection(-2)
-        [u'pCube4', u'pCube1']
-    """
-    return SelectionList.from_ordered(slice_start, slice_stop, slice_step,
-                                      **kwargs)
+
+def daglist(*args, **kwargs):
+    return _get_dagpath_list_from_type(DagpathList, *args, **kwargs)
+
+
+def dependlist(*args, **kwargs):
+    return _get_dagpath_list_from_type(DependencyList, *args, **kwargs)
+
+
+def pluglist(name=None, *args, **kwargs):
+    return _get_dagpath_list_from_type(PlugList, *args, **kwargs)
+
+
+def get_depend_node(dagobject):
+    return DependencyNode(dagobject)
 
 
 def get_node(dagpath):
-    """
-    Construct and return a :class:`.DagNode` from given dagpath.
-
-    :param dagpath: ``api.OpenMaya.MDagPath`` or dagpath str.
-    :rtype: :class:`.DagNode`
-
-    Usage::
-
-        >>> dagpath = 'pCube1'
-        >>> dagnode = get_node(dagpath)
-        DagNode('pCube1')
-
-    If support for a specific node exists DagNode will try to create
-    it. These subclasses must be created manually and **always** have
-    the same name as the ``cmds.nodeType`` return value from a dagpath.
-
-        >>> dagpath = 'persp'
-        >>> dagnode = get_node(dagpath)
-        Camera('persp')
-    """
-    return DagNode(dagpath)
+    return Node(dagpath)
 
 
-def get_component(dagpath):
-    """
-    Construct and return a :class:`Component` from given dagpath.
-
-    :param dagpath: dagpath string or a list of dagpath strings
-    :rtype: :class:`.Component`
-
-    Usage::
-
-        >>> dagpath = 'pCube1.f[4]'
-        >>> component = Component(dagpath)
-        Component(['pCube1.f[4]'])
-    """
-    return Component(dagpath)
-
-
-def optionVar(*args, **kwargs):
-    """
-    Construct and return a :class:`.OptionVar` object from
-    cmds.optionVar
-
-    :rtype: :class:`.OptionVar`
-
-    Usage::
-
-        >>> options = mampy.optionVar()
-        >>> options['new_option_variable'] = 20
-        >>> options['new_option_variable']
-        20
-        >>> options['TrackOrderedSelection']
-        True
-
-    .. note:: Redundant
-    """
-    return OptionVar(*args, **kwargs)
-
-
-def mel_globals(*args, **kwargs):
-    return MelGlobals(*args, **kwargs)
-
-
-def get_active_mask():
-    """
-    Construct and return :class:`.SelectionMask` object from active
-    selection mode.
-
-    :rtype: :class:`.SelectionMask`
-
-    Usage::
-
-        >>> smask = mampy.get_active_mask()
-        # By default SelectionMask will show the internal values.
-        SelectionMask([43, 36, 45, 62])
-        ...
-        >>> smask.mask_strings
-        ['kSelectMeshComponents', 'kSelectFacets', 'kSelectMeshFaces',
-         'kSelectComponentsMask']
-        >>> smask.clear()
-        >>> smask.set(kSelectSurfaces)
-
-    .. note:: Redundant
-    """
-    return SelectionMask.active()
-
-
+def get_single_index_component(dagpath, object=None):
+    if isinstance(dagpath, basestring):
+        dagpath, object = get_component_from_string(dagpath)
+    return SingleIndexComponent(dagpath, object)
