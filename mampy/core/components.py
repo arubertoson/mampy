@@ -94,7 +94,10 @@ class AbstractComponent(object):
         sl = api.MSelectionList()
         for dp in cmds.polyListComponentConversion(self.cmdslist(), **kwargs):
             sl.add(dp)
-        return cls(*sl.getComponent(0))
+        try:
+            return cls(*sl.getComponent(0))
+        except IndexError:
+            logger.warn('Index out of range, make sure it is a valid convert')
 
     def cmdslist(self):
         return api.MSelectionList().add(self.node).getSelectionStrings()
