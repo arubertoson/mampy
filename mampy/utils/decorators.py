@@ -109,10 +109,19 @@ def component_mode():
             cmds.selectMode(**{current_mode: True})
 
 
+class no_undo(ContextDecorator):
+    """
+    """
+    def __enter__(self):
+        cmds.undoInfo(stateWithoutFlush=False)
+
+    def __exit__(self, *exc):
+        cmds.undoInfo(stateWithoutFlush=True)
+
+
 class undoable(ContextDecorator):
     def __enter__(self):
         cmds.undoInfo(openChunk=True)
-        return self
 
     def __exit__(self, *exc):
         cmds.undoInfo(closeChunk=True)
