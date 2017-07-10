@@ -7,9 +7,10 @@ This module implements the Mampy API.
 from __future__ import absolute_import, unicode_literals
 
 from mampy.core.dagnodes import Node, DependencyNode
-from mampy.core.components import SingleIndexComponent, get_component_from_string
-from mampy.core.selectionlist import (ComponentList, MultiComponentList, DagpathList,
-                                      DependencyList, PlugList)
+from mampy.core.components import (SingleIndexComponent,
+                                   get_component_from_string)
+from mampy.core.selectionlist import (ComponentList, MultiComponentList,
+                                      DagpathList, DependencyList, PlugList)
 
 
 def _get_dagpath_list_from_type(list_object, *args, **kwargs):
@@ -45,7 +46,7 @@ def dependlist(*args, **kwargs):
     return _get_dagpath_list_from_type(DependencyList, *args, **kwargs)
 
 
-def pluglist(name=None, *args, **kwargs):
+def pluglist(*args, **kwargs):
     return _get_dagpath_list_from_type(PlugList, *args, **kwargs)
 
 
@@ -61,3 +62,4 @@ def get_single_index_component(dagpath, object=None):
     if isinstance(dagpath, basestring):
         dagpath, object = get_component_from_string(dagpath)
     return SingleIndexComponent(dagpath, object)
+
