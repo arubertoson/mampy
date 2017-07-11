@@ -35,6 +35,5 @@
     "python.autoComplete.extraPaths": [
         "C:/Program Files/Autodesk/Maya2017/devkit/other/pymel/extras/completion/py"
     ],
-    "cSpell.enabled": false,
-    "python.pythonPath": "C:/Users/marcu/AppData/Local/Programs/Python/Python36/python.exe"
+    "cSpell.enabled": false
 }
