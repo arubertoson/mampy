@@ -5,7 +5,7 @@ from Qt import QtWidgets
 from maya import cmds
 from maya import OpenMaya as oapi
 
-from mampy.lib.mvp import Viewport
+from mvp import Viewport
 from mampy.utils.decorators import object_mode, select_keep
 
 

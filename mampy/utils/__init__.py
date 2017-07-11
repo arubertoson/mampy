@@ -8,9 +8,6 @@ from .dagnode import get_outliner_index, get_object_under_cursor, get_objects_in
 
 from .decorators import *
 
-from mampy.lib import plugger, profilehooks, pathlib2
-
-
 class Singleton(type):
     _instances = {}
     def __call__(cls, *args, **kwargs):

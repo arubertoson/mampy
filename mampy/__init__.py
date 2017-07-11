@@ -36,7 +36,6 @@ from mampy.api import (complist,
                        get_single_index_component,
                        get_node,
                        get_depend_node,)
-from mampy._old.api import *
 
 log = logging.getLogger(__name__)
 
