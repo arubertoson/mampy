@@ -41,7 +41,6 @@ setup(
         'contextlib2',
         # 'profilehooks'
     ],
-    # entry_points={'console_scripts': ['mayatest = mayatest.cli:main']},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
