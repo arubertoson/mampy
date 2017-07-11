@@ -54,8 +54,8 @@ class AbstractDraggerCtx(object):
         """
         Return pressed modifiers.
         """
-        from PySide import QtGui, QtCore
-        qapp = QtGui.qApp
+        from Qt import QtWidgets, QtCore
+        qapp = QtWidgets.qApp
         shift_mod = qapp.keyboardModifiers() & QtCore.Qt.ShiftModifier
         ctrl_mod = qapp.keyboardModifiers() & QtCore.Qt.ControlModifier
         if (ctrl_mod == QtCore.Qt.ControlModifier and
