@@ -197,7 +197,7 @@ class DependencyNode(AbstractNode):
     @property
     def plugs(self):
         if self._plugs is None:
-            self._plugs = (Plug(p) for p in self._mfndep.getConnections())
+            self._plugs = (Plug(p) for p in self._mfnnode.getConnections())
         return self._plugs
 
     def exists(self):
