@@ -22,8 +22,3 @@ def test_daglist_empty_with_dependency_node_selected():
         mesh, plug = cube
         cmds.select(plug)
         assert not mampy.daglist()
-
-# def test_module_setup():
-#     assert DependencyNode()
-#         with pytest.raises(TypeError) as mampy.daglist()
-#         assert DependencyNode(plug)
