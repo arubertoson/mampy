@@ -216,7 +216,10 @@ class DagbaseList(AbstractSelectionList):
                     if isinstance(element, basestring):
                         sl = api.MSelectionList().add(element)
                         get = getattr(sl, self._get_func)
-                        element = get(0)
+                        try:
+                            element = get(0)
+                        except TypeError:
+                            continue
                     elif isinstance(element, Node):
                         element = element.dagpath
                     self._slist.add(element, merge)
