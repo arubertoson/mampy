@@ -1,21 +1,4 @@
 {
-    "cSpell.enabledLanguageIds": [
-        "c",
-        "cpp",
-        "csharp",
-        "go",
-        "javascript",
-        "javascriptreact",
-        "json",
-        "latex",
-        "markdown",
-        "php",
-        "plaintext",
-        "text",
-        "typescript",
-        "typescriptreact",
-        "yml"
-    ],
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
