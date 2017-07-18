@@ -1,6 +1,6 @@
 """
 """
-from Qt import QtWidgets
+from Qt import QtGui
 
 from maya import cmds
 from maya import OpenMaya as oapi
@@ -15,7 +15,7 @@ def get_object_under_cursor():
     Return selectable object under cursor
     """
     view = Viewport.active()
-    cursor_pos = view.widget.mapFromGlobal(QtWidgets.QCursor.pos())
+    cursor_pos = view.widget.mapFromGlobal(QtGui.QCursor.pos())
 
     with object_mode():
         oapi.MGlobal.selectFromScreen(
