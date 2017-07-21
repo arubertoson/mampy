@@ -149,7 +149,10 @@ class ComponentList(AbstractSelectionList):
             else:
                 for element in elements:
                     if isinstance(element, basestring):
-                        element = api.MSelectionList().add(element).getComponent(0)
+                        try:
+                            element = api.MSelectionList().add(element).getComponent(0)
+                        except TypeError:
+                            continue
                     self._slist.add(element, merge)
 
     def __getitem__(self, key):

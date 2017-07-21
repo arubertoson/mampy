@@ -6,6 +6,7 @@ import contextlib
 from maya import cmds
 
 import mampy
+from mampy.core import utils
 
 
 @contextlib.contextmanager
