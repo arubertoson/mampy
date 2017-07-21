@@ -9,7 +9,7 @@
         "**/mampy.egg-info": true
     },
     // "python.pythonPath": "C:/Program Files/Autodesk/Maya2017/bin/mayapy.exe",
-    "python.pythonPath": "G:/dev/.env/vscode2.7/scripts/python.exe",
+    "python.pythonPath": "G:/dev/.env/mampy/scripts/python.exe",
     "python.linting.pylintArgs": [
         "--disable=C0111",
         "--init-hook={import sys; sys.path.append('C:/Program Files/Autodesk/Maya2017/Python/Lib/site-packages')}"
@@ -17,5 +17,6 @@
     "python.autoComplete.extraPaths": [
         "C:/Program Files/Autodesk/Maya2017/devkit/other/pymel/extras/completion/py"
     ],
-    "cSpell.enabled": false
+    "cSpell.enabled": false,
+    "python.linting.pep8Enabled": false
 }

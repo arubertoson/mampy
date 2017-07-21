@@ -30,7 +30,7 @@
             "taskName": "Run Test",
             "command": "${env:WORKON_HOME}/mampy/scripts/mayatest",
             "type": "shell",
-            "args": ["-m", "2017"],
+            "args": ["-m", "2017", "--pytest=-s"],
             "group": {
                 "kind": "test",
                 "isDefault": true
