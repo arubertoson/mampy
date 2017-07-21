@@ -4,9 +4,6 @@ Config helper
 import os
 import sys
 import json
-import yaml
-import ast
-import simplejson
 
 from mampy.utils.external.pathlib2 import Path
 
@@ -41,7 +38,7 @@ class Config(dict):
             super(Config, self).__init__(data)
         else:
             with self._file.open('w') as json_file:
-                json_file.write(unicode(json.dumps('{}')))
+                json.dump(unicode('{}'), json_file, ensure_ascii=False)
         self._initialized = True
 
     @property
@@ -56,8 +53,4 @@ class Config(dict):
 
     def dumps(self, data=None):
         with self._file.open('w') as json_file:
-            json_file.write(
-                unicode(
-                    json.dumps(
-                        data or self, indent=2, sort_keys=4,
-                        ensure_ascii=False)))
+            json.dump(unicode(data or self), json_file, indent=2, ensure_ascii=False)
