@@ -143,6 +143,44 @@ def maya_plug():
             pass
 
     return _maya_plug
+
+
+@pytest.fixture(scope='function')
+def complist(xcomponents):
+    mlist = om.MSelectionList()
+    with xcomponents(10) as complist:
+        for each in complist:
+            mlist.add(each)
+        yield mlist
+
+
+@pytest.fixture(scope='function')
+def daglist(xcubes):
+    mlist = om.MSelectionList()
+    with xcubes(10) as daglist:
+        for each in daglist:
+            mlist.add(each)
+        yield mlist
+
+
+@pytest.fixture(scope='function')
+def deplist(maya_depnode):
+    mlist = om.MSelectionList()
+    for _ in xrange(10):
+        with maya_depnode() as depnode:
+            mlist.add(depnode)
+    yield mlist
+
+
+@pytest.fixture(scope='function')
+def pluglist(maya_plug):
+    mlist = om.MSelectionList()
+    for _ in xrange(10):
+        with maya_plug() as plug:
+            mlist.add(plug)
+    yield mlist
+
+
 # @pytest.fixture(scope='function')
 # def nonsolid(xcubes):
 

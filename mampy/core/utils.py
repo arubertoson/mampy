@@ -1,35 +1,54 @@
+# -*- coding: utf-8 -*-
 """
+mampy.core.utils
+
+This module contains helper functions for mampy.core objects.
 """
 import itertools
+from abc import ABCMeta, abstractmethod
+
+from maya import cmds
+from maya.api import OpenMaya as om
 
 
-def get_average_vert_normal(normals, *args):
-    try:
-        cls = normals[0].__class__
-    except KeyError:
-        cls = next(iter(normals)).__class__
+class IMayaStringList(object):
+    """ Interface that implements the represenation of a Maya Object as a
+    list of strings.
 
-    object = cls()
-    args = args[0] if len(args) == 1 else args
-    for v in args:
-        object += normals[v]
-    return object / len(args)
-
-
-class IndicesDict(dict):
     """
-    Container object for points bound by dictionary
-    """
-    def __iter__(self):
-        return iter(set(itertools.chain(*self.itervalues())))
+    __metaclass__ = ABCMeta
+    __slots__ = ()
 
-    def __contains__(self, key):
-        return key in iter(self)
-
-    def has_index(self, index):
-        return index in self.keys()
+    @abstractmethod
+    def cmdslist(self, index=None):
+        pass
 
 
-class ObjectDict(IndicesDict):
-    def __iter__(self):
-        return self.itervalues()
+def get_maya_component_from_input(input):
+    return om.MSelectionList().add(input).getComponent(0)
+
+
+def get_maya_dagpath_from_input(input):
+    return om.MSelectionList().add(input).getDagPath(0)
+
+
+def get_maya_strlist_from_iterable(string_elements):
+    mlist = om.MSelectionList()
+    for each in string_elements:
+        mlist.add(each)
+    return mlist
+
+
+def is_track_order_set():
+    return cmds.selectPref(q=True, trackSelectionOrder=True)
+
+
+def need_ordered_selection_set(kw):
+    return any(i in kw for i in ('fl', 'flatten', 'os', 'orderedSelection'))
+
+
+def itermayalist(mlist):
+    it = om.MItSelectionList(mlist)
+    while not it.isDone():
+        yield it
+        it.next()
