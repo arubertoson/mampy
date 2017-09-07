@@ -13,7 +13,7 @@ from maya.api import OpenMaya as om
 
 from mampy.core import cache
 from mampy.core.cache import cache_MList_object, invalidate_instance_cache
-from mampy.core.components3 import ComponentFactory, MultiComponent
+from mampy.core.components import ComponentFactory, MultiComponent
 from mampy.core.exceptions import OrderedSelectionsNotSet
 from mampy.core.utils import (
     IMayaStringList, get_maya_strlist_from_iterable, is_track_order_set,
