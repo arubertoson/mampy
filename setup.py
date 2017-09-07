@@ -39,7 +39,6 @@ setup(
         'Qt.py==1.1.0b1',
         'mvp',
         'contextlib2',
-        # 'profilehooks'
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
