@@ -257,6 +257,8 @@ class ComponentList(CacheableMListAdapter):
     def from_strings(cls, string_elements, merge=True):
         mlist = om.MSelectionList()
         for each in string_elements:
+            # Need to convert the string to a component object before adding,
+            # else it will merge normally weather we want it or not.
             comp = get_maya_component_from_input(each)
             mlist.add(comp, mergeWithExisting=merge)
         return cls(mlist)
