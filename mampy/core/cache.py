@@ -10,7 +10,7 @@ import functools
 (CACHE, POP, COPY) = range(3)
 
 
-def cache_MList_object(method=None, action=CACHE):
+def mlist_object(method=None, action=CACHE):
     """Caches a return object from mampy list objects using index as key.
 
     Can be called with mode:
@@ -21,7 +21,7 @@ def cache_MList_object(method=None, action=CACHE):
     """
 
     def decorator(method):
-        wrapper = _cache_list_object_wrapper(method, action)
+        wrapper = _cache_mlist_object(method, action)
         return functools.update_wrapper(wrapper, method)
 
     if method:
@@ -30,7 +30,7 @@ def cache_MList_object(method=None, action=CACHE):
         return decorator
 
 
-def _cache_list_object_wrapper(method, action):
+def _cache_mlist_object(method, action):
 
     def pop(cache, index):
         cache.pop(index, None)
@@ -85,7 +85,7 @@ def memoize(func):
     return wrapper
 
 
-class cached_property(object):
+class property(object):
     """cached property acts as a lazy attribute
 
     The property will replace the underlying attribute access, meaning
