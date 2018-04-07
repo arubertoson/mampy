@@ -32,10 +32,10 @@ def get_maya_dagpath_from_input(input):
     return om.MSelectionList().add(input).getDagPath(0)
 
 
-def get_maya_strlist_from_iterable(string_elements):
+def get_maya_strlist_from_iterable(string_elements, merge):
     mlist = om.MSelectionList()
     for each in string_elements:
-        mlist.add(each)
+        mlist.add(each, merge)
     return mlist
 
 

@@ -101,3 +101,9 @@ ENV/
 # Other
 .benchmarks
 _backups
+.scratchpad[s]
+.vscode*
+GPATH
+GRTAGS
+GTAGS
+*.sync-conflict*

@@ -40,12 +40,14 @@ class AbstractMListFactory(object):
 
     @classmethod
     def from_strings(cls, string_elements, merge=True):
-        """Return a ComponentList from a list of string components."""
         return cls(get_maya_strlist_from_iterable(string_elements))
 
     @classmethod
     def from_ls(cls, *args, **kw):
-        """Wraps the cmds.ls command to query objects from the maya scene."""
+        """Wraps the cmds.ls command to query objects from the maya scene.
+
+        Merge will be used when we try to query from lists that require it.
+        """
         # Assume that we want to merge the selection list
         merge = True
         if need_ordered_selection_set(kw):
@@ -360,6 +362,7 @@ class MultiComponentList(ComponentList):
 
 
 class AbstractObjectBase(CacheableMListAdapter):
+    """Implements generic methods for Maya Dag objects."""
     __slots__ = ()
 
     @classmethod

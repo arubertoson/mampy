@@ -64,6 +64,29 @@ def _cache_mlist_object(method, action):
     return wrapper
 
 
+def CachableSequence(cls):
+    """Implements cache decorators on Mampy Sequences."""
+    class CacheWrapper(cls):
+        """Class wrapper that wraps necessary methods for cacheable interface.
+        """
+        @mlist_object
+        def __getitem__(self, key):
+            return super(CacheWrapper, self).__getitem__(key)
+
+        @mlist_object(action=COPY)
+        def __copy__(self):
+            return super(CacheWrapper, self).__copy__()
+
+        @mlist_object(action=POP)
+        def __setitem__(self, index, value):
+            super(CacheWrapper, self).__setitem__(index, value)
+
+        @mlist_object(action=POP)
+        def remove(self, index):
+            super(CacheWrapper, self).remove(index)
+    return CacheWrapper
+
+
 def memoize(func):
     cache = func._cache = {}
 

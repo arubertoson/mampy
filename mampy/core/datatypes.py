@@ -1,12 +1,16 @@
+# -*- coding: utf-8 -*-
 """
+mampy.core.datatypes
+
+This module contains datatypes used in mampy.core modules
 """
 import sys
 import math
+import itertools
+
 import maya.api.OpenMaya as api
 
-
 __all__ = ['get_line_line_intersection', 'BoundingBox', 'Point2D', 'Line3D']
-
 
 EPS = sys.float_info.epsilon
 
@@ -47,37 +51,53 @@ def get_line_line_intersection(line1, line2):
     return Line3D(api.MPoint(pa), api.MPoint(pb))
 
 
-class BoundingBox(api.MBoundingBox):
+class BoundingBox2D(api.MBoundingBox):
+    """Wraps MBoundingBox to work as a 2D box."""
 
-    def __init__(self, *args, **kwargs):
-        super(BoundingBox, self).__init__(*args, **kwargs)
+    def __init__(self, *args):
+        self._bbox = api.MBoundingBox(*args)
 
-        self.boxtype = '3D'
+    def __repr__(self):
+        return repr(self._bbox)
+
+    def __str__(self):
+        return str(self._bbox)
 
     @property
     def center(self):
-        bbox = super(BoundingBox, self).center
-        if self.boxtype == '2D':
-            return Point2D(bbox)
-        return bbox
+        return Point2D(self._bbox.center)
 
     @property
-    def max(self):
-        bbox = super(BoundingBox, self).max
-        if self.boxtype == '2D':
-            return Point2D(bbox)
-        return bbox
+    def width(self):
+        return Point2D(self._bbox.width)
+
+    @property
+    def height(self):
+        return Point2D(self._bbox.height)
 
     @property
     def min(self):
-        bbox = super(BoundingBox, self).min
-        if self.boxtype == '2D':
-            return Point2D(bbox)
-        return bbox
+        return Point2D(self._bbox.min)
+
+    @property
+    def max(self):
+        return Point2D(self._bbox.max)
+
+    def contains(self, point):
+        return self._bbox.contains(point)
+
+    def expand(self, point):
+        return self._bbox.expand(point)
+
+    def intersects(self, other):
+        return self._bbox.expand(other)
+
+    def transformUsing(self, matrix):
+        return self._bbox.expand(matrix)
 
 
 class Point2D(api.MPoint):
-
+    """Using MPoint as base adding u, v coordinates."""
     def __init__(self, *args, **kwargs):
         super(Point2D, self).__init__(*args, **kwargs)
 
@@ -100,7 +120,6 @@ class Point2D(api.MPoint):
 
 
 class Line3D(object):
-
     def __init__(self, point1, point2):
         self.p1 = point1
         self.p2 = point2
@@ -205,3 +224,43 @@ class Line2D(object):
         return self._center
 
 
+class IndexValueMap(dict):
+    """For storing Index -> point pairs
+
+    IndexValueMap tries to be smart about iteration, we will always work with a
+    list of MPoints but we have access to the underlying indices meaning a
+    IndexValueMap constructed from face indices would have a nested
+    IndexValueMap with vertex indices, same with edges. This gives freedom to
+    dive deep if we have the need or work with faces, edges, verts, maps
+    without having separate functinality for each object.
+
+    NOTE: If speed ever becomes an issue look into caching the creation of
+        the MPoint list with a cache that can invalidate.
+    """
+
+    def _iter_dispatcher(self):
+        if isinstance(self.itervalues().next(), self.__class__):
+            return self._iternestedpoints()
+        else:
+            return self._iterpoints()
+
+    def __iter__(self):
+        return iter([]) if not (self) else self._iter_dispatcher()
+
+    def has_point(self, point):
+        # TODO: Should be fixed as soon as possible as a new list is created
+        #   for every point that is checked. Create issue
+        return point in list(self)
+
+    def _iterpoints(self):
+        return self.itervalues()
+
+    def _iternestedpoints(self):
+        seen = set()
+        for facepoint in self.itervalues():
+            for vertidx in facepoint.iterkeys():
+                if vertidx in seen:
+                    continue
+                else:
+                    seen.add(vertidx)
+                yield facepoint[vertidx]

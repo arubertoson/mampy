@@ -191,73 +191,74 @@ class AbstractMListSequence(object):
         return self._mlist.getSelectionStrings()
 
 
-# class ComponentMListFactory(AbstractMListFactory):
-#     """Factory generates ComponentList objects."""
-#
-#     @classmethod
-#     def from_strings(cls, string_elements, merge=True):
-#         """Generates MList from string elements.
-#
-#         We require to convert the Maya Component object before adding to
-#         MSelectionList to make merge available to us, otherwise MSelectionList
-#         will merge weather we want it to or not.
-#         """
-#         mlist = om.MSelectionList()
-#         for each in string_elements:
-#             comp = utils.get_maya_component_from_input(each)
-#             mlist.add(comp, mergeWithExisting=merge)
-#         return cls(mlist)
-#
-#     def is_valid(self):
-#         for each in utils.itermayalist(self._mlist):
-#             if not each.hasComponents():
-#                 return False
-#         return True
-#
+class ComponentMListFactory(AbstractMListFactory):
+    """Factory generates ComponentList objects."""
 
-# class ComponentFactory(object):
-#     def __init__(self, *args, **kw):
-#         pass
-#
-#
-# @cache.CachableSequence
-# class ComponentList(ComponentMListFactory, AbstractMListSequence):
-#     """ComponentList is a container for Maya Component objects.
-#
-#     A component object in Maya is a index list bound to a MDagPath object
-#     internally represented as a node: (MDagPath, MObject). We don't need to
-#     track anything in this list as we can delegate that to the Mampy
-#     `Component` classes, this class only represents an interface between the
-#     internal maya object and the mampy object.
-#
-#     As indices and different types all are Contained within the same MObject it
-#     is often prefered to use the `update` method as it will try to add indices
-#     to existing components which is usually the desired behaviour. Append will
-#     function as promised and add a new object to the back of the list.
-#     """
-#     __slots__ = ('_mlist', '_cache')
-#
-#     def __contains__(self, component):
-#         return self._mlist.hasItemPartly(*component)
-#
-#     @property
-#     def _getitem_type(self):
-#         return ComponentFactory
-#
-#     @property
-#     def _getitem_method(self):
-#         return self._mlist.getComponent
-#
-#     @cache.invalidate_instance_cache
-#     def update(self, other):
-#         """Update will try to update existing Component Objects in the list,
-#         if none are found will instead append to the list.
-#
-#         On successful update we will have to reevvaluate the cache as there is
-#         no sane way of knowing whihc object was modified.
-#         """
-#         try:
-#             self._mlist.merge(
-#                 other._mlist, strategy=om.MSelectionList.kMergeNormal)
-#         except AttributeError:
-#             self._mlist.add(other)
+    @classmethod
+    def from_strings(cls, string_elements, merge=True):
+        """Generates MList from string elements.
+
+        We require to convert the Maya Component object before adding to
+        MSelectionList to make merge available to us, otherwise MSelectionList
+        will merge weather we want it to or not.
+        """
+        mlist = om.MSelectionList()
+        for each in string_elements:
+            comp = utils.get_maya_component_from_input(each)
+            mlist.add(comp, mergeWithExisting=merge)
+        return cls(mlist)
+
+    def is_valid(self):
+        for each in utils.itermayalist(self._mlist):
+            if not each.hasComponents():
+                return False
+        return True
+
+
+class ComponentFactory(object):
+    def __init__(self, *args, **kw):
+        pass
+
+
+@cache.CachableSequence
+class ComponentList(ComponentMListFactory, AbstractMListSequence):
+    """ComponentList is a container for Maya Component objects.
+
+    A component object in Maya is a index list bound to a MDagPath object
+    internally represented as a node: (MDagPath, MObject). We don't need to
+    track anything in this list as we can delegate that to the Mampy
+    `Component` classes, this class only represents an interface between the
+    internal maya object and the mampy object.
+
+    As indices and different types all are Contained within the same MObject it
+    is often prefered to use the `update` method as it will try to add indices
+    to existing components which is usually the desired behaviour. Append will
+    function as promised and add a new object to the back of the list.
+    """
+    __slots__ = ('_mlist', '_cache')
+
+    def __contains__(self, component):
+        return self._mlist.hasItemPartly(*component)
+
+    @property
+    def _getitem_type(self):
+        return ComponentFactory
+
+    @property
+    def _getitem_method(self):
+        return self._mlist.getComponent
+
+    @cache.invalidate_instance_cache
+    def update(self, other):
+        """Update will try to update existing Component Objects in the list,
+        if none are found will instead append to the list.
+
+        On successful update we will have to reevvaluate the cache as there is
+        no sane way of knowing whihc object was modified.
+        """
+        try:
+            self._mlist.merge(
+                other._mlist, strategy=om.MSelectionList.kMergeNormal)
+        except AttributeError:
+            self._mlist.add(other)
+
